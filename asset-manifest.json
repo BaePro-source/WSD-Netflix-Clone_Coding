@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/movie-demo/static/css/main.62a68f97.css",
-    "main.js": "/movie-demo/static/js/main.31e46440.js",
-    "static/js/453.3fdcc1fb.chunk.js": "/movie-demo/static/js/453.3fdcc1fb.chunk.js",
-    "index.html": "/movie-demo/index.html",
-    "main.62a68f97.css.map": "/movie-demo/static/css/main.62a68f97.css.map",
-    "main.31e46440.js.map": "/movie-demo/static/js/main.31e46440.js.map",
-    "453.3fdcc1fb.chunk.js.map": "/movie-demo/static/js/453.3fdcc1fb.chunk.js.map"
+    "main.css": "/WSD-Netflix-Clone_Coding/static/css/main.62a68f97.css",
+    "main.js": "/WSD-Netflix-Clone_Coding/static/js/main.bf190666.js",
+    "static/js/453.3fdcc1fb.chunk.js": "/WSD-Netflix-Clone_Coding/static/js/453.3fdcc1fb.chunk.js",
+    "index.html": "/WSD-Netflix-Clone_Coding/index.html",
+    "main.62a68f97.css.map": "/WSD-Netflix-Clone_Coding/static/css/main.62a68f97.css.map",
+    "main.bf190666.js.map": "/WSD-Netflix-Clone_Coding/static/js/main.bf190666.js.map",
+    "453.3fdcc1fb.chunk.js.map": "/WSD-Netflix-Clone_Coding/static/js/453.3fdcc1fb.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.62a68f97.css",
-    "static/js/main.31e46440.js"
+    "static/js/main.bf190666.js"
   ]
 }
