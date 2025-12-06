@@ -1,15 +1,26 @@
 // src/pages/Home.jsx
-import React from 'react';
+import React, { useCallback } from 'react';
 import Navbar from '../components/Navbar';
+import MovieList from '../components/MovieList';
+import { movieAPI } from '../services/api';
 import '../styles/Home.css';
 
 function Home() {
+    // useCallback으로 함수 메모이제이션
+    const fetchPopular = useCallback(() => movieAPI.getPopular(), []);
+    const fetchNowPlaying = useCallback(() => movieAPI.getNowPlaying(), []);
+    const fetchUpcoming = useCallback(() => movieAPI.getUpcoming(), []);
+    const fetchTopRated = useCallback(() => movieAPI.getTopRated(), []);
+
     return (
         <div className="home">
             <Navbar />
+
             <div className="home-content">
-                <h1>🎬 영화 목록 페이지</h1>
-                <p>곧 영화들이 여기에 표시됩니다!</p>
+                <MovieList title="🔥 인기 영화" fetchMovies={fetchPopular} />
+                <MovieList title="🎬 현재 상영중" fetchMovies={fetchNowPlaying} />
+                <MovieList title="🎉 개봉 예정" fetchMovies={fetchUpcoming} />
+                <MovieList title="⭐ 높은 평점" fetchMovies={fetchTopRated} />
             </div>
         </div>
     );

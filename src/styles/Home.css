@@ -6,6 +6,24 @@
 }
 
 .home-content {
-    padding-top: 100px;
-    padding-left: 40px;
+    padding-top: 80px; /* Navbar 높이만큼 */
+    padding-bottom: 40px;
+}
+
+/* 전체 페이지 스크롤바 스타일 */
+body::-webkit-scrollbar {
+    width: 12px;
+}
+
+body::-webkit-scrollbar-track {
+    background: #141414;
+}
+
+body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+}
+
+body::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
 }
