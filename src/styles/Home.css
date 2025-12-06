@@ -1,0 +1,11 @@
+/* src/styles/Home.css */
+.home {
+    background-color: #141414;
+    min-height: 100vh;
+    color: white;
+}
+
+.home-content {
+    padding-top: 100px;
+    padding-left: 40px;
+}
