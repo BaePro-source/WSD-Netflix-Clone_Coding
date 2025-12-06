@@ -3,7 +3,8 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { isLoggedIn } from './services/auth';
 import SignIn from './pages/SignIn';
-import Home from './pages/Home';  // ✅ 새로운 Home 컴포넌트 import
+import Home from './pages/Home';
+import Popular from './pages/Popular';  // ✅ Popular import
 import './App.css';
 
 // 로그인 필요한 페이지 보호
@@ -26,7 +27,17 @@ function App() {
                     path="/"
                     element={
                         <ProtectedRoute>
-                            <Home />  {/* ✅ pages/Home.jsx 사용 */}
+                            <Home />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* 인기 영화 페이지 (로그인 필요) */}
+                <Route
+                    path="/popular"
+                    element={
+                        <ProtectedRoute>
+                            <Popular />
                         </ProtectedRoute>
                     }
                 />
