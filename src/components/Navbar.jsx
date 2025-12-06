@@ -1,12 +1,12 @@
 // src/components/Navbar.jsx
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';  // ✅ useLocation 추가
+import { useNavigate, useLocation } from 'react-router-dom';
 import { logout, getCurrentUser } from '../services/auth';
 import '../styles/Navbar.css';
 
 function Navbar() {
     const navigate = useNavigate();
-    const location = useLocation();  // ✅ 현재 경로 확인
+    const location = useLocation();
     const currentUser = getCurrentUser();
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -40,9 +40,14 @@ function Navbar() {
                             className={`navbar-item ${location.pathname === '/popular' ? 'active' : ''}`}
                             onClick={() => navigate('/popular')}
                         >
-                            인기
+                            영화
                         </li>
-                        <li className="navbar-item">내가 찜한 콘텐츠</li>
+                        <li
+                            className={`navbar-item ${location.pathname === '/wishlist' ? 'active' : ''}`}
+                            onClick={() => navigate('/wishlist')}
+                        >
+                            내가 찜한 콘텐츠
+                        </li>
                     </ul>
                 </div>
 
