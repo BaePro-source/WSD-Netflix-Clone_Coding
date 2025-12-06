@@ -1,7 +1,7 @@
 // src/App.js
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { isLoggedIn } from './services/auth';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { isLoggedIn, logout } from './services/auth';
 import SignIn from './pages/SignIn';
 import './App.css';
 
@@ -15,14 +15,18 @@ function ProtectedRoute({ children }) {
 
 // 임시 홈 페이지 (나중에 제대로 만들 예정)
 function Home() {
+    const navigate = useNavigate(); // ✅ useNavigate 추가
+
+    const handleLogout = () => {
+        logout(); // auth.js의 logout 함수 사용
+        navigate('/signin'); // ✅ React Router로 이동
+    };
+
     return (
         <div className="App">
             <h1>🎬 Netflix 클론 - 메인 페이지</h1>
             <p>로그인 성공! 메인 페이지입니다.</p>
-            <button onClick={() => {
-                localStorage.removeItem('currentUser');
-                window.location.href = '/signin';
-            }}>
+            <button onClick={handleLogout}>
                 로그아웃
             </button>
         </div>
