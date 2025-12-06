@@ -40,7 +40,7 @@ function Navbar() {
                             className={`navbar-item ${location.pathname === '/popular' ? 'active' : ''}`}
                             onClick={() => navigate('/popular')}
                         >
-                            영화
+                            인기
                         </li>
                         <li className="navbar-item">내가 찜한 콘텐츠</li>
                     </ul>
