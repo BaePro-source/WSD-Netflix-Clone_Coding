@@ -1,11 +1,12 @@
 // src/components/Navbar.jsx
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';  // ✅ useLocation 추가
 import { logout, getCurrentUser } from '../services/auth';
 import '../styles/Navbar.css';
 
 function Navbar() {
     const navigate = useNavigate();
+    const location = useLocation();  // ✅ 현재 경로 확인
     const currentUser = getCurrentUser();
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -17,7 +18,6 @@ function Navbar() {
     const handleSearch = (e) => {
         e.preventDefault();
         if (searchQuery.trim()) {
-            // TODO: 나중에 검색 페이지로 이동
             console.log('검색:', searchQuery);
         }
     };
@@ -26,16 +26,27 @@ function Navbar() {
         <nav className="navbar">
             <div className="navbar-container">
                 <div className="navbar-left">
-                    <h1 className="navbar-logo">🎬 MOVIEFLIX</h1>
+                    <h1 className="navbar-logo" onClick={() => navigate('/')}>
+                        🎬 MOVIEFLIX
+                    </h1>
                     <ul className="navbar-menu">
-                        <li className="navbar-item active">홈</li>
-                        <li className="navbar-item">영화</li>
+                        <li
+                            className={`navbar-item ${location.pathname === '/' ? 'active' : ''}`}
+                            onClick={() => navigate('/')}
+                        >
+                            홈
+                        </li>
+                        <li
+                            className={`navbar-item ${location.pathname === '/popular' ? 'active' : ''}`}
+                            onClick={() => navigate('/popular')}
+                        >
+                            영화
+                        </li>
                         <li className="navbar-item">내가 찜한 콘텐츠</li>
                     </ul>
                 </div>
 
                 <div className="navbar-right">
-                    {/* 검색 */}
                     <form className="navbar-search" onSubmit={handleSearch}>
                         <input
                             type="text"
