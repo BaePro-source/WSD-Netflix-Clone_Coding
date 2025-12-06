@@ -1,0 +1,241 @@
+/* src/styles/Popular.css */
+
+.popular {
+    background-color: #141414;
+    min-height: 100vh;
+    color: white;
+}
+
+.popular-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 100px 40px 40px;
+}
+
+.popular-title {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 30px;
+    color: #fff;
+}
+
+/* 로딩 & 에러 */
+.loading,
+.error {
+    text-align: center;
+    padding: 60px 20px;
+    font-size: 18px;
+}
+
+.error {
+    color: #e50914;
+}
+
+/* Table View */
+.movie-table {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table-header {
+    display: grid;
+    grid-template-columns: 100px 2fr 100px 120px 3fr;
+    gap: 20px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    font-weight: 700;
+    font-size: 14px;
+    color: #e5e5e5;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.table-row {
+    display: grid;
+    grid-template-columns: 100px 2fr 100px 120px 3fr;
+    gap: 20px;
+    padding: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.3s ease;
+    align-items: center;
+}
+
+.table-row:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.table-row:last-child {
+    border-bottom: none;
+}
+
+/* Table Cells */
+.cell-poster img {
+    width: 80px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.cell-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.cell-rating {
+    font-size: 14px;
+    color: #ffd700;
+    font-weight: 600;
+}
+
+.cell-date {
+    font-size: 14px;
+    color: #999;
+}
+
+.cell-overview {
+    font-size: 14px;
+    color: #b3b3b3;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 40px;
+    padding: 20px;
+}
+
+.page-button {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.page-button:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+}
+
+.page-button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.page-numbers {
+    display: flex;
+    gap: 5px;
+}
+
+.page-number {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    min-width: 45px;
+}
+
+.page-number:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.page-number.active {
+    background: #e50914;
+    border-color: #e50914;
+    color: white;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+    .table-header,
+    .table-row {
+        grid-template-columns: 80px 1.5fr 80px 100px 2fr;
+        gap: 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .popular-container {
+        padding: 90px 20px 20px;
+    }
+
+    .popular-title {
+        font-size: 28px;
+    }
+
+    /* 모바일에서는 카드 형식으로 변경 */
+    .table-header {
+        display: none;
+    }
+
+    .table-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding: 20px 15px;
+        background: rgba(255, 255, 255, 0.05);
+        margin-bottom: 10px;
+        border-radius: 8px;
+    }
+
+    .cell-poster {
+        display: flex;
+        justify-content: center;
+    }
+
+    .cell-poster img {
+        width: 120px;
+        height: 180px;
+    }
+
+    .cell-title {
+        text-align: center;
+        font-size: 18px;
+    }
+
+    .cell-rating,
+    .cell-date {
+        text-align: center;
+    }
+
+    .cell-overview {
+        -webkit-line-clamp: 5;
+    }
+
+    .pagination {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .page-button {
+        padding: 8px 15px;
+        font-size: 13px;
+    }
+
+    .page-number {
+        padding: 8px 12px;
+        font-size: 13px;
+        min-width: 40px;
+    }
+}
