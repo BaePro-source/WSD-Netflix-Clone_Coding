@@ -3,7 +3,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { movieAPI } from '../services/api';
 import { getImageUrl } from '../services/api';
 import Navbar from '../components/Navbar';
-import { isInWishlist, toggleWishlist } from '../utils/localStorage';
+import MovieCard from '../components/MovieCard'; // ✅ MovieCard import
+import { toggleWishlist } from '../utils/localStorage';
 import '../styles/Popular.css';
 
 function Popular() {
@@ -17,7 +18,7 @@ function Popular() {
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const lastMovieRef = useRef(null);
     const [showTopButton, setShowTopButton] = useState(false);
-    const [wishlistUpdate, setWishlistUpdate] = useState(0); // ✅ 찜 상태 업데이트용
+    const [wishlistUpdate, setWishlistUpdate] = useState(0);
 
     // Table View용 데이터 로딩
     const fetchPopularMovies = async (page) => {
@@ -141,9 +142,9 @@ function Popular() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // ✅ 찜하기 핸들러
-    const handleWishlistToggle = (movie, e) => {
-        e.stopPropagation();
+    // ✅ Bottom-Up: 자식(MovieCard)으로부터 받은 이벤트 처리
+    const handleWishlistToggle = (movie) => {
+        console.log('부모에서 찜하기 이벤트 받음:', movie.title);
         toggleWishlist(movie);
         setWishlistUpdate(prev => prev + 1); // 강제 리렌더링
     };
@@ -265,43 +266,18 @@ function Popular() {
                 {viewMode === 'scroll' && (
                     <>
                         <div className="movie-grid">
-                            {movies.map((movie, index) => {
-                                const isWished = isInWishlist(movie.id);
-
-                                return (
-                                    <div
-                                        key={`${movie.id}-${index}`}
-                                        className="movie-card-scroll"
-                                        ref={index === movies.length - 1 ? lastMovieRef : null}
-                                    >
-                                        {/* ✅ 찜하기 버튼 추가 */}
-                                        <button
-                                            className={`wishlist-btn ${isWished ? 'wished' : ''}`}
-                                            onClick={(e) => handleWishlistToggle(movie, e)}
-                                            title={isWished ? '찜 해제' : '찜하기'}
-                                        >
-                                            {isWished ? '❤️' : '🤍'}
-                                        </button>
-
-                                        <img
-                                            src={getImageUrl(movie.poster_path)}
-                                            alt={movie.title}
-                                            className="scroll-poster"
-                                        />
-                                        <div className="scroll-info">
-                                            <h3 className="scroll-title">{movie.title}</h3>
-                                            <div className="scroll-details">
-                                                <span className="scroll-rating">
-                                                    ⭐ {movie.vote_average?.toFixed(1)}
-                                                </span>
-                                                <span className="scroll-year">
-                                                    {movie.release_date?.split('-')[0]}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
+                            {movies.map((movie, index) => (
+                                <div
+                                    key={`${movie.id}-${index}`}
+                                    ref={index === movies.length - 1 ? lastMovieRef : null}
+                                >
+                                    {/* ✅ MovieCard 사용 + Bottom-Up 콜백 전달 */}
+                                    <MovieCard
+                                        movie={movie}
+                                        onWishlistToggle={handleWishlistToggle}
+                                    />
+                                </div>
+                            ))}
                         </div>
 
                         {isLoadingMore && (
