@@ -1,8 +1,9 @@
 // src/pages/Popular.jsx
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { movieAPI } from '../services/api';
 import { getImageUrl } from '../services/api';
 import Navbar from '../components/Navbar';
+import { isInWishlist, toggleWishlist } from '../utils/localStorage';
 import '../styles/Popular.css';
 
 function Popular() {
@@ -16,6 +17,7 @@ function Popular() {
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const lastMovieRef = useRef(null);
     const [showTopButton, setShowTopButton] = useState(false);
+    const [wishlistUpdate, setWishlistUpdate] = useState(0); // ✅ 찜 상태 업데이트용
 
     // Table View용 데이터 로딩
     const fetchPopularMovies = async (page) => {
@@ -139,6 +141,13 @@ function Popular() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
+    // ✅ 찜하기 핸들러
+    const handleWishlistToggle = (movie, e) => {
+        e.stopPropagation();
+        toggleWishlist(movie);
+        setWishlistUpdate(prev => prev + 1); // 강제 리렌더링
+    };
+
     if (loading && movies.length === 0) {
         return (
             <div className="popular">
@@ -256,30 +265,43 @@ function Popular() {
                 {viewMode === 'scroll' && (
                     <>
                         <div className="movie-grid">
-                            {movies.map((movie, index) => (
-                                <div
-                                    key={`${movie.id}-${index}`}
-                                    className="movie-card-scroll"
-                                    ref={index === movies.length - 1 ? lastMovieRef : null}
-                                >
-                                    <img
-                                        src={getImageUrl(movie.poster_path)}
-                                        alt={movie.title}
-                                        className="scroll-poster"
-                                    />
-                                    <div className="scroll-info">
-                                        <h3 className="scroll-title">{movie.title}</h3>
-                                        <div className="scroll-details">
-                                            <span className="scroll-rating">
-                                                ⭐ {movie.vote_average?.toFixed(1)}
-                                            </span>
-                                            <span className="scroll-year">
-                                                {movie.release_date?.split('-')[0]}
-                                            </span>
+                            {movies.map((movie, index) => {
+                                const isWished = isInWishlist(movie.id);
+
+                                return (
+                                    <div
+                                        key={`${movie.id}-${index}`}
+                                        className="movie-card-scroll"
+                                        ref={index === movies.length - 1 ? lastMovieRef : null}
+                                    >
+                                        {/* ✅ 찜하기 버튼 추가 */}
+                                        <button
+                                            className={`wishlist-btn ${isWished ? 'wished' : ''}`}
+                                            onClick={(e) => handleWishlistToggle(movie, e)}
+                                            title={isWished ? '찜 해제' : '찜하기'}
+                                        >
+                                            {isWished ? '❤️' : '🤍'}
+                                        </button>
+
+                                        <img
+                                            src={getImageUrl(movie.poster_path)}
+                                            alt={movie.title}
+                                            className="scroll-poster"
+                                        />
+                                        <div className="scroll-info">
+                                            <h3 className="scroll-title">{movie.title}</h3>
+                                            <div className="scroll-details">
+                                                <span className="scroll-rating">
+                                                    ⭐ {movie.vote_average?.toFixed(1)}
+                                                </span>
+                                                <span className="scroll-year">
+                                                    {movie.release_date?.split('-')[0]}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
 
                         {isLoadingMore && (

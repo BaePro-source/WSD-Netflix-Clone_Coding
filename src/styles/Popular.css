@@ -221,6 +221,39 @@
     transform: scale(1.05);
 }
 
+/* ✅ 찜하기 버튼 스타일 */
+.wishlist-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.7);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 20;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+}
+
+.wishlist-btn:hover {
+    background: rgba(0, 0, 0, 0.9);
+    transform: scale(1.15);
+}
+
+.wishlist-btn.wished {
+    background: rgba(229, 9, 20, 0.9);
+}
+
+.wishlist-btn.wished:hover {
+    background: rgba(229, 9, 20, 1);
+}
+
 .scroll-poster {
     width: 100%;
     height: 300px;
@@ -406,6 +439,13 @@
 
     .scroll-details {
         font-size: 12px;
+    }
+
+    /* 찜하기 버튼 모바일 */
+    .wishlist-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 18px;
     }
 
     /* 맨 위로 버튼 */

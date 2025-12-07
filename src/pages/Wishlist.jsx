@@ -1,7 +1,7 @@
 // src/pages/Wishlist.jsx
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
-import { getWishlist, toggleWishlist } from '../utils/localStorage';
+import { getWishlist, removeFromWishlist } from '../utils/localStorage'; // ✅ removeFromWishlist 사용
 import { getImageUrl } from '../services/api';
 import '../styles/Wishlist.css';
 
@@ -16,7 +16,7 @@ function Wishlist() {
     }, []);
 
     const handleRemoveFromWishlist = (movieId) => {
-        toggleWishlist(movieId);
+        removeFromWishlist(movieId); // ✅ removeFromWishlist 사용
         // 상태 업데이트
         const updatedMovies = getWishlist();
         setWishlistMovies(updatedMovies);
@@ -66,7 +66,7 @@ function Wishlist() {
                 {viewMode === 'scroll' && (
                     <div className="movie-grid">
                         {wishlistMovies.map((movie) => (
-                            <div key={movie.id} className="movie-card-wishlist">
+                            <div key={movie.id} className="movie-card-wishlist"> {/* ✅ key 추가 */}
                                 <button
                                     className="remove-wishlist-btn"
                                     onClick={() => handleRemoveFromWishlist(movie.id)}
@@ -108,7 +108,7 @@ function Wishlist() {
                         </div>
 
                         {wishlistMovies.map((movie) => (
-                            <div key={movie.id} className="table-row">
+                            <div key={movie.id} className="table-row"> {/* ✅ key 추가 */}
                                 <div className="cell-poster">
                                     <img
                                         src={getImageUrl(movie.poster_path, 'w200')}

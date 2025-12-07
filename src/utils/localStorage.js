@@ -1,107 +1,98 @@
 // src/utils/localStorage.js
 
-// 찜한 영화 목록 가져오기
+// 위시리스트 관리
 export const getWishlist = () => {
-    const wishlist = localStorage.getItem('wishlist');
-    return wishlist ? JSON.parse(wishlist) : [];
+    try {
+        const wishlist = localStorage.getItem('wishlist');
+        return wishlist ? JSON.parse(wishlist) : [];
+    } catch (error) {
+        console.error('위시리스트 불러오기 실패:', error);
+        return [];
+    }
 };
 
-// 찜한 영화 목록 저장하기
-export const saveWishlist = (wishlist) => {
+export const toggleWishlist = (movieOrId) => {
+    // ✅ movie 객체 또는 ID 처리
+    if (!movieOrId) {
+        console.error('유효하지 않은 영화 데이터:', movieOrId);
+        return;
+    }
+
+    const wishlist = getWishlist();
+
+    // ✅ movieOrId가 숫자면 ID로, 객체면 movie로 처리
+    const movieId = typeof movieOrId === 'number' ? movieOrId : movieOrId.id;
+    const movieData = typeof movieOrId === 'object' ? movieOrId : null;
+
+    const existingIndex = wishlist.findIndex(item => item.id === movieId);
+
+    if (existingIndex !== -1) {
+        // 이미 있으면 제거
+        wishlist.splice(existingIndex, 1);
+    } else {
+        // 없으면 추가 (객체인 경우만)
+        if (movieData) {
+            wishlist.push(movieData);
+        }
+    }
+
     localStorage.setItem('wishlist', JSON.stringify(wishlist));
 };
 
-// 영화를 찜 목록에 추가
-export const addToWishlist = (movie) => {
-    const wishlist = getWishlist();
-
-    // 중복 체크
-    const exists = wishlist.some(item => item.id === movie.id);
-    if (exists) {
-        return { success: false, message: '이미 찜한 영화입니다.' };
-    }
-
-    wishlist.push({
-        id: movie.id,
-        title: movie.title,
-        poster_path: movie.poster_path,
-        vote_average: movie.vote_average,
-        release_date: movie.release_date,
-        addedAt: new Date().toISOString(),
-    });
-
-    saveWishlist(wishlist);
-    return { success: true, message: '찜 목록에 추가되었습니다!' };
-};
-
-// 영화를 찜 목록에서 제거
-export const removeFromWishlist = (movieId) => {
-    const wishlist = getWishlist();
-    const filteredWishlist = wishlist.filter(item => item.id !== movieId);
-
-    saveWishlist(filteredWishlist);
-    return { success: true, message: '찜 목록에서 제거되었습니다.' };
-};
-
-// 영화가 찜 목록에 있는지 확인
 export const isInWishlist = (movieId) => {
     const wishlist = getWishlist();
-    return wishlist.some(item => item.id === movieId);
+    return wishlist.some(movie => movie.id === movieId);
 };
 
-// 찜 목록 토글 (있으면 제거, 없으면 추가)
-export const toggleWishlist = (movie) => {
-    if (isInWishlist(movie.id)) {
-        return removeFromWishlist(movie.id);
-    } else {
-        return addToWishlist(movie);
+export const removeFromWishlist = (movieId) => {
+    const wishlist = getWishlist();
+    const filtered = wishlist.filter(movie => movie.id !== movieId);
+    localStorage.setItem('wishlist', JSON.stringify(filtered));
+};
+
+// 검색 기록 관리
+export const getSearchHistory = () => {
+    try {
+        const history = localStorage.getItem('searchHistory');
+        return history ? JSON.parse(history) : [];
+    } catch (error) {
+        console.error('검색 기록 불러오기 실패:', error);
+        return [];
     }
 };
 
-// 최근 검색어 저장 (최대 10개)
-export const saveSearchHistory = (query) => {
-    if (!query || query.trim() === '') return;
-
-    let history = getSearchHistory();
+export const addToSearchHistory = (query) => {
+    const history = getSearchHistory();
 
     // 중복 제거
-    history = history.filter(item => item !== query);
+    const filtered = history.filter(item => item !== query);
 
-    // 맨 앞에 추가
-    history.unshift(query);
+    // 최신 검색어를 맨 앞에 추가
+    filtered.unshift(query);
 
-    // 최대 10개만 유지
-    if (history.length > 10) {
-        history = history.slice(0, 10);
-    }
+    // 최대 10개까지만 저장
+    const limited = filtered.slice(0, 10);
 
-    localStorage.setItem('searchHistory', JSON.stringify(history));
+    localStorage.setItem('searchHistory', JSON.stringify(limited));
 };
 
-// 검색 기록 가져오기
-export const getSearchHistory = () => {
-    const history = localStorage.getItem('searchHistory');
-    return history ? JSON.parse(history) : [];
-};
-
-// 검색 기록 삭제
 export const clearSearchHistory = () => {
     localStorage.removeItem('searchHistory');
 };
 
-// 사용자 선호 설정 저장
-export const saveUserPreferences = (preferences) => {
-    const current = getUserPreferences();
-    const updated = { ...current, ...preferences };
-    localStorage.setItem('userPreferences', JSON.stringify(updated));
+// 사용자 설정 관리
+export const getUserPreferences = () => {
+    try {
+        const prefs = localStorage.getItem('userPreferences');
+        return prefs ? JSON.parse(prefs) : {};
+    } catch (error) {
+        console.error('사용자 설정 불러오기 실패:', error);
+        return {};
+    }
 };
 
-// 사용자 선호 설정 가져오기
-export const getUserPreferences = () => {
-    const prefs = localStorage.getItem('userPreferences');
-    return prefs ? JSON.parse(prefs) : {
-        theme: 'dark',
-        language: 'ko',
-        autoPlay: true,
-    };
+export const setUserPreference = (key, value) => {
+    const prefs = getUserPreferences();
+    prefs[key] = value;
+    localStorage.setItem('userPreferences', JSON.stringify(prefs));
 };
