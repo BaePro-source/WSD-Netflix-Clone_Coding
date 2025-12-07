@@ -250,6 +250,24 @@
     margin-bottom: 40px;
 }
 
+/* ✅ Search 페이지에서는 MovieCard 정보를 항상 표시 */
+.search .movie-grid .movie-info {
+    opacity: 1 !important;
+}
+
+.search .movie-grid .movie-card {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.search .movie-grid .movie-card:hover {
+    border-color: #e50914;
+    box-shadow: 0 8px 24px rgba(229, 9, 20, 0.3);
+}
+
 /* ========== 테이블 뷰 ========== */
 .movie-table {
     background: rgba(255, 255, 255, 0.03);
