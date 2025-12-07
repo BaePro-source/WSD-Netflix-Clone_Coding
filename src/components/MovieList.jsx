@@ -1,12 +1,14 @@
 // src/components/MovieList.jsx
 import React, { useState, useEffect } from 'react';
 import MovieCard from './MovieCard';
+import { toggleWishlist } from '../utils/localStorage'; // ✅ import 추가
 import '../styles/MovieList.css';
 
 function MovieList({ title, fetchMovies }) {
     const [movies, setMovies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [wishlistUpdate, setWishlistUpdate] = useState(0); // ✅ 찜 상태 업데이트용
 
     useEffect(() => {
         const loadMovies = async () => {
@@ -24,7 +26,14 @@ function MovieList({ title, fetchMovies }) {
         };
 
         loadMovies();
-    }, [fetchMovies]); // ✅ fetchMovies 추가
+    }, [fetchMovies]);
+
+    // ✅ Bottom-Up: 자식(MovieCard)으로부터 받은 이벤트 처리
+    const handleWishlistToggle = (movie) => {
+        console.log('MovieList에서 찜하기 이벤트 받음:', movie.title);
+        toggleWishlist(movie);
+        setWishlistUpdate(prev => prev + 1); // 강제 리렌더링
+    };
 
     if (loading) {
         return (
@@ -50,7 +59,12 @@ function MovieList({ title, fetchMovies }) {
             <div className="movie-list-container">
                 <div className="movie-list">
                     {movies.map((movie) => (
-                        <MovieCard key={movie.id} movie={movie} />
+                        /* ✅ Bottom-Up: 콜백 prop 전달 */
+                        <MovieCard
+                            key={movie.id}
+                            movie={movie}
+                            onWishlistToggle={handleWishlistToggle}
+                        />
                     ))}
                 </div>
             </div>
