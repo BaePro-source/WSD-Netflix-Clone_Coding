@@ -5,7 +5,8 @@ import { isLoggedIn } from './services/auth';
 import SignIn from './pages/SignIn';
 import Home from './pages/Home';
 import Popular from './pages/Popular';
-import Wishlist from './pages/Wishlist';  // ✅ Wishlist import
+import Wishlist from './pages/Wishlist';
+import Search from './pages/Search';  // ✅ Search import
 import './App.css';
 
 // 로그인 필요한 페이지 보호
@@ -49,6 +50,16 @@ function App() {
                     element={
                         <ProtectedRoute>
                             <Wishlist />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* 검색/필터링 페이지 (로그인 필요) */}
+                <Route
+                    path="/search"
+                    element={
+                        <ProtectedRoute>
+                            <Search />
                         </ProtectedRoute>
                     }
                 />

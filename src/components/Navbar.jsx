@@ -18,7 +18,9 @@ function Navbar() {
     const handleSearch = (e) => {
         e.preventDefault();
         if (searchQuery.trim()) {
-            console.log('검색:', searchQuery);
+            // /search 페이지로 이동하면서 검색어를 쿼리 파라미터로 전달
+            navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+            setSearchQuery(''); // 검색 후 입력창 초기화
         }
     };
 
