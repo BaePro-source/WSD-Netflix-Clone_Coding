@@ -1,11 +1,11 @@
 // src/components/MovieCard.jsx
 import React, { useState, useEffect } from 'react';
 import { getImageUrl } from '../services/api';
-import { isInWishlist, toggleWishlist } from '../utils/localStorage';
+import { isInWishlist } from '../utils/localStorage';
 import '../styles/MovieCard.css';
 
-function MovieCard({ movie }) {
-    const { title, poster_path, vote_average, release_date } = movie;
+function MovieCard({ movie, onWishlistToggle }) {
+    const { title, poster_path, vote_average, release_date, overview } = movie;
     const [isWished, setIsWished] = useState(false);
 
     useEffect(() => {
@@ -14,7 +14,13 @@ function MovieCard({ movie }) {
 
     const handleWishlistClick = (e) => {
         e.stopPropagation(); // 카드 클릭 이벤트 방지
-        toggleWishlist(movie);
+
+        // ✅ Bottom-Up: 부모 컴포넌트로 이벤트 전달
+        if (onWishlistToggle) {
+            onWishlistToggle(movie);
+        }
+
+        // 로컬 상태 업데이트
         setIsWished(!isWished);
     };
 
@@ -40,6 +46,11 @@ function MovieCard({ movie }) {
                         {release_date?.split('-')[0]}
                     </span>
                 </div>
+                {overview && (
+                    <p className="movie-overview">
+                        {overview.length > 100 ? `${overview.substring(0, 100)}...` : overview}
+                    </p>
+                )}
             </div>
         </div>
     );
