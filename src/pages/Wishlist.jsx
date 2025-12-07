@@ -1,25 +1,34 @@
 // src/pages/Wishlist.jsx
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
-import { getWishlist, removeFromWishlist } from '../utils/localStorage'; // ✅ removeFromWishlist 사용
+import MovieCard from '../components/MovieCard'; // ✅ MovieCard import
+import { getWishlist, removeFromWishlist, toggleWishlist } from '../utils/localStorage';
 import { getImageUrl } from '../services/api';
 import '../styles/Wishlist.css';
 
 function Wishlist() {
     const [wishlistMovies, setWishlistMovies] = useState([]);
     const [viewMode, setViewMode] = useState('scroll');
+    const [wishlistUpdate, setWishlistUpdate] = useState(0); // ✅ 찜 상태 업데이트용
 
     useEffect(() => {
         // localStorage에서 찜한 영화 목록 불러오기
         const movies = getWishlist();
         setWishlistMovies(movies);
-    }, []);
+    }, [wishlistUpdate]); // ✅ wishlistUpdate 의존성 추가
 
     const handleRemoveFromWishlist = (movieId) => {
-        removeFromWishlist(movieId); // ✅ removeFromWishlist 사용
+        removeFromWishlist(movieId);
         // 상태 업데이트
         const updatedMovies = getWishlist();
         setWishlistMovies(updatedMovies);
+    };
+
+    // ✅ Bottom-Up: 자식(MovieCard)으로부터 받은 이벤트 처리
+    const handleWishlistToggle = (movie) => {
+        console.log('Wishlist에서 찜 해제 이벤트 받음:', movie.title);
+        toggleWishlist(movie); // 찜 해제
+        setWishlistUpdate(prev => prev + 1); // 강제 리렌더링
     };
 
     if (wishlistMovies.length === 0) {
@@ -66,31 +75,12 @@ function Wishlist() {
                 {viewMode === 'scroll' && (
                     <div className="movie-grid">
                         {wishlistMovies.map((movie) => (
-                            <div key={movie.id} className="movie-card-wishlist"> {/* ✅ key 추가 */}
-                                <button
-                                    className="remove-wishlist-btn"
-                                    onClick={() => handleRemoveFromWishlist(movie.id)}
-                                    title="찜 해제"
-                                >
-                                    ❌
-                                </button>
-                                <img
-                                    src={getImageUrl(movie.poster_path)}
-                                    alt={movie.title}
-                                    className="wishlist-poster"
-                                />
-                                <div className="wishlist-info">
-                                    <h3 className="wishlist-movie-title">{movie.title}</h3>
-                                    <div className="wishlist-details">
-                                        <span className="wishlist-rating">
-                                            ⭐ {movie.vote_average?.toFixed(1)}
-                                        </span>
-                                        <span className="wishlist-year">
-                                            {movie.release_date?.split('-')[0]}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
+                            /* ✅ MovieCard 사용 + Bottom-Up 콜백 전달 */
+                            <MovieCard
+                                key={movie.id}
+                                movie={movie}
+                                onWishlistToggle={handleWishlistToggle}
+                            />
                         ))}
                     </div>
                 )}
@@ -108,7 +98,7 @@ function Wishlist() {
                         </div>
 
                         {wishlistMovies.map((movie) => (
-                            <div key={movie.id} className="table-row"> {/* ✅ key 추가 */}
+                            <div key={movie.id} className="table-row">
                                 <div className="cell-poster">
                                     <img
                                         src={getImageUrl(movie.poster_path, 'w200')}
