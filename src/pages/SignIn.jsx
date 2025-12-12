@@ -2,11 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login, register, getRememberedEmail } from '../services/auth';
+import { movieAPI, getImageUrl } from '../services/api';
 import '../styles/SignIn.css';
 
 function SignIn() {
     const navigate = useNavigate();
-    const [isLogin, setIsLogin] = useState(true); // true: 로그인, false: 회원가입
+    const [isLogin, setIsLogin] = useState(true);
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -16,8 +17,25 @@ function SignIn() {
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [backgroundPosters, setBackgroundPosters] = useState([]); // ✅ 배경 포스터
 
-    // 컴포넌트 마운트 시 Remember Me 확인
+    // ✅ 배경 포스터 가져오기
+    useEffect(() => {
+        const fetchBackgroundPosters = async () => {
+            try {
+                const response = await movieAPI.getPopular(1);
+                const posters = response.data.results
+                    .slice(0, 20) // 20개만
+                    .map(movie => getImageUrl(movie.poster_path, 'w500'));
+                setBackgroundPosters(posters);
+            } catch (error) {
+                console.error('배경 포스터 로딩 실패:', error);
+            }
+        };
+        fetchBackgroundPosters();
+    }, []);
+
+    // Remember Me 확인
     useEffect(() => {
         const rememberedEmail = getRememberedEmail();
         if (rememberedEmail) {
@@ -29,17 +47,15 @@ function SignIn() {
         }
     }, []);
 
-    // 입력 변경 핸들러
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData(prev => ({
             ...prev,
             [name]: type === 'checkbox' ? checked : value,
         }));
-        setError(''); // 에러 초기화
+        setError('');
     };
 
-    // 로그인/회원가입 전환
     const toggleMode = () => {
         setIsLogin(!isLogin);
         setError('');
@@ -51,7 +67,6 @@ function SignIn() {
         }));
     };
 
-    // 로그인 처리
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
@@ -65,7 +80,7 @@ function SignIn() {
             );
 
             alert(result.message);
-            navigate('/'); // 메인 페이지로 이동
+            navigate('/');
         } catch (err) {
             setError(err.message);
         } finally {
@@ -73,18 +88,15 @@ function SignIn() {
         }
     };
 
-    // 회원가입 처리
     const handleRegister = async (e) => {
         e.preventDefault();
         setError('');
 
-        // 비밀번호 확인
         if (formData.password !== formData.confirmPassword) {
             setError('비밀번호가 일치하지 않습니다.');
             return;
         }
 
-        // 약관 동의 확인
         if (!formData.agreeTerms) {
             setError('약관에 동의해주세요.');
             return;
@@ -96,7 +108,6 @@ function SignIn() {
             const result = await register(formData.email, formData.password);
             alert(result.message);
 
-            // 회원가입 성공 시 로그인 모드로 전환
             setIsLogin(true);
             setFormData(prev => ({
                 ...prev,
@@ -112,16 +123,29 @@ function SignIn() {
 
     return (
         <div className="signin-container">
-            <div className="signin-background"></div>
+            {/* ✅ 배경 포스터 그리드 */}
+            <div className="signin-background">
+                <div className="poster-grid">
+                    {backgroundPosters.map((poster, index) => (
+                        <div
+                            key={index}
+                            className="poster-item"
+                            style={{
+                                backgroundImage: `url(${poster})`,
+                                animationDelay: `${index * 0.1}s`
+                            }}
+                        />
+                    ))}
+                </div>
+            </div>
 
             <div className={`signin-box ${isLogin ? 'login-mode' : 'register-mode'}`}>
                 <div className="signin-header">
-                    <h1>🎬 Netflix 클론</h1>
+                    <h1>🎬 MOVIEFLIX</h1>
                     <p>{isLogin ? '로그인하여 계속하기' : '회원가입하고 시작하기'}</p>
                 </div>
 
                 <form onSubmit={isLogin ? handleLogin : handleRegister} className="signin-form">
-                    {/* 이메일 입력 */}
                     <div className="input-group">
                         <label htmlFor="email">이메일</label>
                         <input
@@ -136,7 +160,6 @@ function SignIn() {
                         />
                     </div>
 
-                    {/* 비밀번호 입력 */}
                     <div className="input-group">
                         <label htmlFor="password">비밀번호</label>
                         <input
@@ -152,7 +175,6 @@ function SignIn() {
                         />
                     </div>
 
-                    {/* 회원가입 모드: 비밀번호 확인 */}
                     {!isLogin && (
                         <div className="input-group">
                             <label htmlFor="confirmPassword">비밀번호 확인</label>
@@ -170,10 +192,8 @@ function SignIn() {
                         </div>
                     )}
 
-                    {/* 에러 메시지 */}
                     {error && <div className="error-message">{error}</div>}
 
-                    {/* 로그인 모드: Remember Me */}
                     {isLogin && (
                         <div className="checkbox-group">
                             <label>
@@ -189,7 +209,6 @@ function SignIn() {
                         </div>
                     )}
 
-                    {/* 회원가입 모드: 약관 동의 */}
                     {!isLogin && (
                         <div className="checkbox-group">
                             <label>
@@ -206,7 +225,6 @@ function SignIn() {
                         </div>
                     )}
 
-                    {/* 제출 버튼 */}
                     <button
                         type="submit"
                         className="submit-btn"
@@ -216,7 +234,6 @@ function SignIn() {
                     </button>
                 </form>
 
-                {/* 모드 전환 버튼 */}
                 <div className="toggle-mode">
                     <p>
                         {isLogin ? '아직 회원이 아니신가요?' : '이미 계정이 있으신가요?'}
