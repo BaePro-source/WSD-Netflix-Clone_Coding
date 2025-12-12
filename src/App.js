@@ -1,30 +1,14 @@
 // src/App.js
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { isLoggedIn, logout } from './services/auth';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { isLoggedIn } from './services/auth';
 import ProtectedRoute from './components/ProtectedRoute';
 import SignIn from './pages/SignIn';
+import Home from './pages/Home';
+import Popular from './pages/Popular';
+import Search from './pages/Search';
+import Wishlist from './pages/Wishlist';
 import './App.css';
-
-// 임시 홈 페이지 (나중에 제대로 만들 예정)
-function Home() {
-    const navigate = useNavigate();
-
-    const handleLogout = () => {
-        logout();
-        navigate('/signin');
-    };
-
-    return (
-        <div className="App">
-            <h1>🎬 Netflix 클론 - 메인 페이지</h1>
-            <p>로그인 성공! 메인 페이지입니다.</p>
-            <button onClick={handleLogout}>
-                로그아웃
-            </button>
-        </div>
-    );
-}
 
 function App() {
     return (
@@ -44,6 +28,36 @@ function App() {
                     element={
                         <ProtectedRoute>
                             <Home />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Popular 페이지 (로그인 필요) */}
+                <Route
+                    path="/popular"
+                    element={
+                        <ProtectedRoute>
+                            <Popular />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Search 페이지 (로그인 필요) */}
+                <Route
+                    path="/search"
+                    element={
+                        <ProtectedRoute>
+                            <Search />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Wishlist 페이지 (로그인 필요) */}
+                <Route
+                    path="/wishlist"
+                    element={
+                        <ProtectedRoute>
+                            <Wishlist />
                         </ProtectedRoute>
                     }
                 />
