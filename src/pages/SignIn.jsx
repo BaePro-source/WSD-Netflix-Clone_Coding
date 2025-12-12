@@ -3,10 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login, register, getRememberedEmail } from '../services/auth';
 import { movieAPI, getImageUrl } from '../services/api';
+import Toast from '../components/Toast';
+import { useToast } from '../hooks/useToast';
 import '../styles/SignIn.css';
 
 function SignIn() {
     const navigate = useNavigate();
+    const { toasts, showToast, removeToast } = useToast();
     const [isLogin, setIsLogin] = useState(true);
     const [formData, setFormData] = useState({
         email: '',
@@ -18,7 +21,7 @@ function SignIn() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [backgroundPosters, setBackgroundPosters] = useState([]);
-    const [isSwitching, setIsSwitching] = useState(false); // ✅ 모드 전환 중
+    const [isSwitching, setIsSwitching] = useState(false);
 
     // ✅ 배경 포스터 가져오기
     useEffect(() => {
@@ -26,7 +29,7 @@ function SignIn() {
             try {
                 const response = await movieAPI.getPopular(1);
                 const posters = response.data.results
-                    .slice(0, 20) // 20개만
+                    .slice(0, 20)
                     .map(movie => getImageUrl(movie.poster_path, 'w500'));
                 setBackgroundPosters(posters);
             } catch (error) {
@@ -61,7 +64,6 @@ function SignIn() {
     const toggleMode = () => {
         setIsSwitching(true);
 
-        // Fade out 완료 후 내용 변경
         setTimeout(() => {
             setIsLogin(!isLogin);
             setError('');
@@ -72,7 +74,6 @@ function SignIn() {
                 agreeTerms: false,
             }));
 
-            // 내용 변경 후 약간 대기 후 fade in
             setTimeout(() => {
                 setIsSwitching(false);
             }, 50);
@@ -91,10 +92,16 @@ function SignIn() {
                 formData.rememberMe
             );
 
-            alert(result.message);
-            navigate('/');
+            // ✅ alert 대신 Toast 사용
+            showToast(result.message, 'success');
+
+            // 약간의 딜레이 후 페이지 이동
+            setTimeout(() => {
+                navigate('/');
+            }, 1000);
         } catch (err) {
             setError(err.message);
+            showToast(err.message, 'error');
         } finally {
             setLoading(false);
         }
@@ -105,12 +112,16 @@ function SignIn() {
         setError('');
 
         if (formData.password !== formData.confirmPassword) {
-            setError('비밀번호가 일치하지 않습니다.');
+            const errorMsg = '비밀번호가 일치하지 않습니다.';
+            setError(errorMsg);
+            showToast(errorMsg, 'error');
             return;
         }
 
         if (!formData.agreeTerms) {
-            setError('약관에 동의해주세요.');
+            const errorMsg = '약관에 동의해주세요.';
+            setError(errorMsg);
+            showToast(errorMsg, 'error');
             return;
         }
 
@@ -118,16 +129,22 @@ function SignIn() {
 
         try {
             const result = await register(formData.email, formData.password);
-            alert(result.message);
 
-            setIsLogin(true);
-            setFormData(prev => ({
-                ...prev,
-                password: '',
-                confirmPassword: '',
-            }));
+            // ✅ alert 대신 Toast 사용
+            showToast(result.message, 'success');
+
+            // 약간의 딜레이 후 로그인 모드로 전환
+            setTimeout(() => {
+                setIsLogin(true);
+                setFormData(prev => ({
+                    ...prev,
+                    password: '',
+                    confirmPassword: '',
+                }));
+            }, 1000);
         } catch (err) {
             setError(err.message);
+            showToast(err.message, 'error');
         } finally {
             setLoading(false);
         }
@@ -135,6 +152,17 @@ function SignIn() {
 
     return (
         <div className="signin-container">
+            {/* ✅ Toast 렌더링 */}
+            {toasts.map(toast => (
+                <Toast
+                    key={toast.id}
+                    message={toast.message}
+                    type={toast.type}
+                    duration={toast.duration}
+                    onClose={() => removeToast(toast.id)}
+                />
+            ))}
+
             {/* ✅ 배경 포스터 그리드 */}
             <div className="signin-background">
                 <div className="poster-grid">
