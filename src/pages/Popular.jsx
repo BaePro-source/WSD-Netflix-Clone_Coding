@@ -3,8 +3,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { movieAPI } from '../services/api';
 import { getImageUrl } from '../services/api';
 import Navbar from '../components/Navbar';
-import MovieCard from '../components/MovieCard'; // ✅ MovieCard import
-import { toggleWishlist } from '../utils/localStorage';
+import MovieCard from '../components/MovieCard';
+import { toggleWishlist, isInWishlist } from '../utils/localStorage';
 import '../styles/Popular.css';
 
 function Popular() {
@@ -18,7 +18,23 @@ function Popular() {
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const lastMovieRef = useRef(null);
     const [showTopButton, setShowTopButton] = useState(false);
-    const [wishlistUpdate, setWishlistUpdate] = useState(0);
+    const [wishlistVersion, setWishlistVersion] = useState(0); // ✅ 찜하기 상태 업데이트용
+
+    // ✅ Table View에서 body scroll 제어
+    useEffect(() => {
+        if (viewMode === 'table') {
+            document.body.style.overflow = 'hidden';
+            document.body.style.height = '100vh';
+        } else {
+            document.body.style.overflow = 'auto';
+            document.body.style.height = 'auto';
+        }
+
+        return () => {
+            document.body.style.overflow = 'auto';
+            document.body.style.height = 'auto';
+        };
+    }, [viewMode]);
 
     // Table View용 데이터 로딩
     const fetchPopularMovies = async (page) => {
@@ -43,7 +59,6 @@ function Popular() {
         try {
             setIsLoadingMore(true);
             const nextPage = currentPage + 1;
-            console.log('📥 페이지 로드:', nextPage);
 
             const response = await movieAPI.getPopular(nextPage);
             const newMovies = response.data.results;
@@ -58,7 +73,7 @@ function Popular() {
 
             setError(null);
         } catch (err) {
-            console.error('❌ 로딩 실패:', err);
+            console.error('로딩 실패:', err);
             setError('영화를 불러오는데 실패했습니다.');
         } finally {
             setIsLoadingMore(false);
@@ -96,8 +111,8 @@ function Popular() {
     useEffect(() => {
         if (viewMode === 'table' && currentPage > 0) {
             fetchPopularMovies(currentPage);
-            window.scrollTo(0, 0);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentPage, viewMode]);
 
     // 무한 스크롤 Intersection Observer
@@ -120,6 +135,7 @@ function Popular() {
         return () => {
             if (observer) observer.disconnect();
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [viewMode, hasMore, isLoadingMore]);
 
     // 스크롤 감지 (맨 위로 버튼)
@@ -142,11 +158,10 @@ function Popular() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // ✅ Bottom-Up: 자식(MovieCard)으로부터 받은 이벤트 처리
+    // ✅ 찜하기 토글 - 리렌더링 트리거 추가
     const handleWishlistToggle = (movie) => {
-        console.log('부모에서 찜하기 이벤트 받음:', movie.title);
         toggleWishlist(movie);
-        setWishlistUpdate(prev => prev + 1); // 강제 리렌더링
+        setWishlistVersion(v => v + 1); // 상태 업데이트로 리렌더링 트리거
     };
 
     if (loading && movies.length === 0) {
@@ -174,7 +189,7 @@ function Popular() {
     }
 
     return (
-        <div className="popular">
+        <div className={`popular ${viewMode === 'table' ? 'table-mode' : ''}`}>
             <Navbar />
             <div className="popular-container">
                 <div className="popular-header">
@@ -197,7 +212,7 @@ function Popular() {
                 </div>
 
                 {viewMode === 'table' && (
-                    <>
+                    <div className="table-view-wrapper">
                         <div className="movie-table">
                             <div className="table-header">
                                 <div className="header-poster">포스터</div>
@@ -205,26 +220,38 @@ function Popular() {
                                 <div className="header-rating">평점</div>
                                 <div className="header-date">개봉일</div>
                                 <div className="header-overview">줄거리</div>
+                                <div className="header-action">찜</div>
                             </div>
 
-                            {movies.map((movie) => (
-                                <div key={movie.id} className="table-row">
-                                    <div className="cell-poster">
-                                        <img
-                                            src={getImageUrl(movie.poster_path, 'w200')}
-                                            alt={movie.title}
-                                        />
+                            <div className="table-body">
+                                {movies.map((movie) => (
+                                    <div key={movie.id} className="table-row">
+                                        <div className="cell-poster">
+                                            <img
+                                                src={getImageUrl(movie.poster_path, 'w200')}
+                                                alt={movie.title}
+                                            />
+                                        </div>
+                                        <div className="cell-title">{movie.title}</div>
+                                        <div className="cell-rating">
+                                            ⭐ {movie.vote_average?.toFixed(1)}
+                                        </div>
+                                        <div className="cell-date">{movie.release_date}</div>
+                                        <div className="cell-overview">
+                                            {movie.overview || '줄거리 정보가 없습니다.'}
+                                        </div>
+                                        <div className="cell-action">
+                                            <button
+                                                className={`table-wishlist-btn ${isInWishlist(movie.id) ? 'wished' : ''}`}
+                                                onClick={() => handleWishlistToggle(movie)}
+                                                title={isInWishlist(movie.id) ? '찜 해제' : '찜하기'}
+                                            >
+                                                {isInWishlist(movie.id) ? '❤️' : '🤍'}
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div className="cell-title">{movie.title}</div>
-                                    <div className="cell-rating">
-                                        ⭐ {movie.vote_average?.toFixed(1)}
-                                    </div>
-                                    <div className="cell-date">{movie.release_date}</div>
-                                    <div className="cell-overview">
-                                        {movie.overview || '줄거리 정보가 없습니다.'}
-                                    </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
 
                         <div className="pagination">
@@ -237,7 +264,7 @@ function Popular() {
                             </button>
 
                             <div className="page-numbers">
-                                {[...Array(5)].map((_, i) => {
+                                {[...Array(Math.min(5, totalPages))].map((_, i) => {
                                     const pageNum = currentPage - 2 + i;
                                     if (pageNum < 1 || pageNum > totalPages) return null;
                                     return (
@@ -252,6 +279,10 @@ function Popular() {
                                 })}
                             </div>
 
+                            <span className="page-info">
+                                {currentPage} / {totalPages}
+                            </span>
+
                             <button
                                 className="page-button"
                                 onClick={() => handlePageChange(currentPage + 1)}
@@ -260,7 +291,7 @@ function Popular() {
                                 다음 →
                             </button>
                         </div>
-                    </>
+                    </div>
                 )}
 
                 {viewMode === 'scroll' && (
@@ -271,7 +302,6 @@ function Popular() {
                                     key={`${movie.id}-${index}`}
                                     ref={index === movies.length - 1 ? lastMovieRef : null}
                                 >
-                                    {/* ✅ MovieCard 사용 + Bottom-Up 콜백 전달 */}
                                     <MovieCard
                                         movie={movie}
                                         onWishlistToggle={handleWishlistToggle}
@@ -298,7 +328,8 @@ function Popular() {
 
             {showTopButton && viewMode === 'scroll' && (
                 <button className="scroll-to-top" onClick={scrollToTop}>
-                    ⬆️ TOP
+                    ⬆️
+                    <span>TOP</span>
                 </button>
             )}
         </div>
