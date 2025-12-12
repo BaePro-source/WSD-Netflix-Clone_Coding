@@ -18,6 +18,7 @@ function Popular() {
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const lastMovieRef = useRef(null);
     const [showTopButton, setShowTopButton] = useState(false);
+    const [wishlistVersion, setWishlistVersion] = useState(0); // ✅ 찜하기 상태 업데이트용
 
     // ✅ Table View에서 body scroll 제어
     useEffect(() => {
@@ -157,8 +158,10 @@ function Popular() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
+    // ✅ 찜하기 토글 - 리렌더링 트리거 추가
     const handleWishlistToggle = (movie) => {
         toggleWishlist(movie);
+        setWishlistVersion(v => v + 1); // 상태 업데이트로 리렌더링 트리거
     };
 
     if (loading && movies.length === 0) {
