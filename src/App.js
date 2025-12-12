@@ -1,28 +1,42 @@
 // src/App.js
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { isLoggedIn } from './services/auth';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { isLoggedIn, logout } from './services/auth';
+import ProtectedRoute from './components/ProtectedRoute';
 import SignIn from './pages/SignIn';
-import Home from './pages/Home';
-import Popular from './pages/Popular';
-import Wishlist from './pages/Wishlist';
-import Search from './pages/Search';  // ✅ Search import
 import './App.css';
 
-// 로그인 필요한 페이지 보호
-function ProtectedRoute({ children }) {
-    if (!isLoggedIn()) {
-        return <Navigate to="/signin" replace />;
-    }
-    return children;
+// 임시 홈 페이지 (나중에 제대로 만들 예정)
+function Home() {
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/signin');
+    };
+
+    return (
+        <div className="App">
+            <h1>🎬 Netflix 클론 - 메인 페이지</h1>
+            <p>로그인 성공! 메인 페이지입니다.</p>
+            <button onClick={handleLogout}>
+                로그아웃
+            </button>
+        </div>
+    );
 }
 
 function App() {
     return (
         <BrowserRouter basename={process.env.PUBLIC_URL}>
             <Routes>
-                {/* 로그인 페이지 */}
-                <Route path="/signin" element={<SignIn />} />
+                {/* 로그인 페이지 - 이미 로그인되어 있으면 홈으로 리다이렉트 */}
+                <Route
+                    path="/signin"
+                    element={
+                        isLoggedIn() ? <Navigate to="/" replace /> : <SignIn />
+                    }
+                />
 
                 {/* 메인 페이지 (로그인 필요) */}
                 <Route
@@ -34,38 +48,8 @@ function App() {
                     }
                 />
 
-                {/* 인기 영화 페이지 (로그인 필요) */}
-                <Route
-                    path="/popular"
-                    element={
-                        <ProtectedRoute>
-                            <Popular />
-                        </ProtectedRoute>
-                    }
-                />
-
-                {/* 찜한 콘텐츠 페이지 (로그인 필요) */}
-                <Route
-                    path="/wishlist"
-                    element={
-                        <ProtectedRoute>
-                            <Wishlist />
-                        </ProtectedRoute>
-                    }
-                />
-
-                {/* 검색/필터링 페이지 (로그인 필요) */}
-                <Route
-                    path="/search"
-                    element={
-                        <ProtectedRoute>
-                            <Search />
-                        </ProtectedRoute>
-                    }
-                />
-
-                {/* 그 외 경로는 로그인으로 */}
-                <Route path="*" element={<Navigate to="/signin" replace />} />
+                {/* 그 외 경로는 메인으로 (로그인 안 되어있으면 자동으로 /signin으로) */}
+                <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
         </BrowserRouter>
     );
