@@ -57,11 +57,11 @@ function SignIn() {
         setError('');
     };
 
-    // ✅ 로그인/회원가입 전환 with 애니메이션
+    // ✅ 로그인/회원가입 전환 - Transition 방식
     const toggleMode = () => {
         setIsSwitching(true);
 
-        // Fade out 중간에 내용 변경 (겹치도록)
+        // Fade out 완료 후 내용 변경
         setTimeout(() => {
             setIsLogin(!isLogin);
             setError('');
@@ -71,12 +71,12 @@ function SignIn() {
                 confirmPassword: '',
                 agreeTerms: false,
             }));
-        }, 250); // fade out 중간 (0.25초)
 
-        // 전체 애니메이션 완료 후 클래스 제거
-        setTimeout(() => {
-            setIsSwitching(false);
-        }, 600); // 전체 시간 (여유있게)
+            // 내용 변경 후 약간 대기 후 fade in
+            setTimeout(() => {
+                setIsSwitching(false);
+            }, 50);
+        }, 300);
     };
 
     const handleLogin = async (e) => {
@@ -153,7 +153,7 @@ function SignIn() {
 
             <div className={`signin-box ${isLogin ? 'login-mode' : 'register-mode'} ${isSwitching ? 'mode-switching' : ''}`}>
                 <div className="signin-header">
-                    <h1>🎬 MOVIEFLIX</h1>
+                    <h1>{isLogin ? '로그인' : '회원가입'}</h1>
                     <p>{isLogin ? '로그인하여 계속하기' : '회원가입하고 시작하기'}</p>
                 </div>
 
