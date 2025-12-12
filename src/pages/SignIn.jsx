@@ -141,54 +141,55 @@ function SignIn() {
 
             <div className={`signin-box ${isLogin ? 'login-mode' : 'register-mode'}`}>
                 <div className="signin-header">
-                    <h1>🎬 MOVIEFLIX</h1>
-                    <p>{isLogin ? '로그인하여 계속하기' : '회원가입하고 시작하기'}</p>
+                    <h1>로그인 </h1>
+                    <p>{isLogin ? '' : '회원가입하고 시작하기'}</p>
                 </div>
 
                 <form onSubmit={isLogin ? handleLogin : handleRegister} className="signin-form">
+                    {/* ✅ Floating Label 적용 */}
                     <div className="input-group">
-                        <label htmlFor="email">이메일</label>
                         <input
                             type="email"
                             id="email"
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
-                            placeholder="example@email.com"
+                            placeholder=" "
                             required
                             disabled={loading}
                         />
+                        <label htmlFor="email">이메일</label>
                     </div>
 
                     <div className="input-group">
-                        <label htmlFor="password">비밀번호</label>
                         <input
                             type="password"
                             id="password"
                             name="password"
                             value={formData.password}
                             onChange={handleChange}
-                            placeholder="비밀번호를 입력하세요"
+                            placeholder=" "
                             required
                             disabled={loading}
                             minLength="4"
                         />
+                        <label htmlFor="password">비밀번호</label>
                     </div>
 
                     {!isLogin && (
                         <div className="input-group">
-                            <label htmlFor="confirmPassword">비밀번호 확인</label>
                             <input
                                 type="password"
                                 id="confirmPassword"
                                 name="confirmPassword"
                                 value={formData.confirmPassword}
                                 onChange={handleChange}
-                                placeholder="비밀번호를 다시 입력하세요"
+                                placeholder=" "
                                 required
                                 disabled={loading}
                                 minLength="4"
                             />
+                            <label htmlFor="confirmPassword">비밀번호 확인</label>
                         </div>
                     )}
 
