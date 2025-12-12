@@ -7,18 +7,19 @@ import { toggleWishlist, isInWishlist } from '../utils/localStorage';
 import '../styles/Home.css';
 
 function Home() {
-    const [featuredMovies, setFeaturedMovies] = useState([]); // ✅ 여러 영화 저장
-    const [currentIndex, setCurrentIndex] = useState(0); // ✅ 현재 인덱스
+    const [featuredMovies, setFeaturedMovies] = useState([]);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [nextIndex, setNextIndex] = useState(null);
     const [isWished, setIsWished] = useState(false);
-    const [isTransitioning, setIsTransitioning] = useState(false);
+    const [slideDirection, setSlideDirection] = useState('');
+    const [isAnimating, setIsAnimating] = useState(false);
 
-    // 메인 배너용 영화들 가져오기 (3-5개)
+    // 메인 배너용 영화들 가져오기
     useEffect(() => {
         const fetchFeaturedMovies = async () => {
             try {
                 const response = await movieAPI.getPopular();
                 const movies = response.data.results;
-                // 평점 높은 영화 5개 선택
                 const topMovies = movies
                     .filter(m => m.vote_average > 7 && m.backdrop_path)
                     .slice(0, 5);
@@ -34,6 +35,18 @@ function Home() {
         fetchFeaturedMovies();
     }, []);
 
+    // 자동 슬라이드 (5초마다)
+    useEffect(() => {
+        if (featuredMovies.length === 0 || isAnimating) return;
+
+        const autoSlide = setInterval(() => {
+            handleNext();
+        }, 5000);
+
+        return () => clearInterval(autoSlide);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [featuredMovies.length, isAnimating, currentIndex]);
+
     // 현재 영화가 바뀔 때마다 찜 상태 업데이트
     useEffect(() => {
         if (featuredMovies.length > 0) {
@@ -41,34 +54,41 @@ function Home() {
         }
     }, [currentIndex, featuredMovies]);
 
-    // 영화 리스트 fetch 함수들
     const fetchPopular = useCallback(() => movieAPI.getPopular(), []);
     const fetchNowPlaying = useCallback(() => movieAPI.getNowPlaying(), []);
     const fetchUpcoming = useCallback(() => movieAPI.getUpcoming(), []);
     const fetchTopRated = useCallback(() => movieAPI.getTopRated(), []);
 
-    // ✅ 이전 영화
-    const handlePrev = () => {
-        if (isTransitioning) return;
-        setIsTransitioning(true);
-        setCurrentIndex((prev) => (prev === 0 ? featuredMovies.length - 1 : prev - 1));
-        setTimeout(() => setIsTransitioning(false), 500);
-    };
+    const handleNext = useCallback(() => {
+        if (isAnimating) return;
 
-    // ✅ 다음 영화
-    const handleNext = () => {
-        if (isTransitioning) return;
-        setIsTransitioning(true);
-        setCurrentIndex((prev) => (prev === featuredMovies.length - 1 ? 0 : prev + 1));
-        setTimeout(() => setIsTransitioning(false), 500);
-    };
+        const newIndex = currentIndex === featuredMovies.length - 1 ? 0 : currentIndex + 1;
+        setNextIndex(newIndex);
+        setSlideDirection('left');
+        setIsAnimating(true);
 
-    // ✅ 특정 영화로 이동 (인디케이터 클릭)
+        setTimeout(() => {
+            setCurrentIndex(newIndex);
+            setNextIndex(null);
+            setSlideDirection('');
+            setIsAnimating(false);
+        }, 600);
+    }, [isAnimating, currentIndex, featuredMovies.length]);
+
     const goToSlide = (index) => {
-        if (isTransitioning || index === currentIndex) return;
-        setIsTransitioning(true);
-        setCurrentIndex(index);
-        setTimeout(() => setIsTransitioning(false), 500);
+        if (isAnimating || index === currentIndex) return;
+
+        const direction = index > currentIndex ? 'left' : 'right';
+        setNextIndex(index);
+        setSlideDirection(direction);
+        setIsAnimating(true);
+
+        setTimeout(() => {
+            setCurrentIndex(index);
+            setNextIndex(null);
+            setSlideDirection('');
+            setIsAnimating(false);
+        }, 600);
     };
 
     const handleWishlistToggle = () => {
@@ -93,6 +113,7 @@ function Home() {
     }
 
     const currentMovie = featuredMovies[currentIndex];
+    const nextMovie = nextIndex !== null ? featuredMovies[nextIndex] : null;
 
     return (
         <div className="home">
@@ -100,9 +121,21 @@ function Home() {
 
             {/* 메인 배너 캐러셀 */}
             <div className="hero-banner">
-                {/* 배경 이미지 */}
+                {/* 다음 영화 배경 */}
+                {nextMovie && (
+                    <div
+                        className={`hero-background next-background slide-in-${slideDirection === 'left' ? 'right' : 'left'}`}
+                        style={{
+                            backgroundImage: `url(${getImageUrl(nextMovie.backdrop_path, 'original')})`
+                        }}
+                    >
+                        <div className="hero-gradient"></div>
+                    </div>
+                )}
+
+                {/* 현재 영화 배경 */}
                 <div
-                    className={`hero-background ${isTransitioning ? 'transitioning' : ''}`}
+                    className={`hero-background current-background ${slideDirection ? `slide-out-${slideDirection}` : ''}`}
                     style={{
                         backgroundImage: `url(${getImageUrl(currentMovie.backdrop_path, 'original')})`
                     }}
@@ -110,28 +143,8 @@ function Home() {
                     <div className="hero-gradient"></div>
                 </div>
 
-                {/* 이전 버튼 */}
-                <button
-                    className="hero-nav-btn prev-btn"
-                    onClick={handlePrev}
-                    disabled={isTransitioning}
-                    aria-label="이전 영화"
-                >
-                    ‹
-                </button>
-
-                {/* 다음 버튼 */}
-                <button
-                    className="hero-nav-btn next-btn"
-                    onClick={handleNext}
-                    disabled={isTransitioning}
-                    aria-label="다음 영화"
-                >
-                    ›
-                </button>
-
                 {/* 콘텐츠 */}
-                <div className={`hero-content ${isTransitioning ? 'transitioning' : ''}`}>
+                <div className={`hero-content ${slideDirection ? `slide-out-${slideDirection}` : ''}`}>
                     <h1 className="hero-title">{currentMovie.title || currentMovie.name}</h1>
 
                     <div className="hero-info">
@@ -162,7 +175,7 @@ function Home() {
                     </div>
                 </div>
 
-                {/* ✅ 인디케이터 (점) */}
+                {/* 인디케이터 */}
                 <div className="hero-indicators">
                     {featuredMovies.map((_, index) => (
                         <button
@@ -170,6 +183,7 @@ function Home() {
                             className={`indicator ${index === currentIndex ? 'active' : ''}`}
                             onClick={() => goToSlide(index)}
                             aria-label={`${index + 1}번째 영화로 이동`}
+                            disabled={isAnimating}
                         />
                     ))}
                 </div>

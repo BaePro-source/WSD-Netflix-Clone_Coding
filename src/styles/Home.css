@@ -25,6 +25,7 @@
     overflow: hidden;
 }
 
+/* ========== 배경 이미지 레이어 ========== */
 .hero-background {
     position: absolute;
     top: 0;
@@ -34,11 +35,74 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    transition: opacity 0.5s ease;
 }
 
-.hero-background.transitioning {
-    opacity: 0.5;
+.current-background {
+    z-index: 2;
+}
+
+.next-background {
+    z-index: 1;
+}
+
+.current-background.slide-out-left {
+    animation: slideOutLeft 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.current-background.slide-out-right {
+    animation: slideOutRight 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.next-background.slide-in-left {
+    animation: slideInLeft 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.next-background.slide-in-right {
+    animation: slideInRight 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes slideOutLeft {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(-30%);
+        opacity: 0;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(30%);
+        opacity: 0;
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        transform: translateX(-30%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(30%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 
 /* 그라디언트 오버레이 */
@@ -70,46 +134,6 @@
     );
 }
 
-/* ========== 화살표 버튼 ========== */
-.hero-nav-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-    background: rgba(0, 0, 0, 0.5);
-    color: #fff;
-    border: none;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    font-size: 3rem;
-    font-weight: 300;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-}
-
-.hero-nav-btn:hover:not(:disabled) {
-    background: rgba(0, 0, 0, 0.8);
-    transform: translateY(-50%) scale(1.1);
-}
-
-.hero-nav-btn:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-}
-
-.prev-btn {
-    left: 20px;
-}
-
-.next-btn {
-    right: 20px;
-}
-
 /* ========== 인디케이터 (점) ========== */
 .hero-indicators {
     position: absolute;
@@ -131,9 +155,14 @@
     transition: all 0.3s ease;
 }
 
-.indicator:hover {
+.indicator:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.8);
     transform: scale(1.2);
+}
+
+.indicator:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
 }
 
 .indicator.active {
@@ -142,18 +171,43 @@
     border-radius: 6px;
 }
 
-/* 배너 콘텐츠 */
+/* ========== 배너 콘텐츠 ========== */
 .hero-content {
     position: relative;
-    z-index: 2;
+    z-index: 3;
     max-width: 600px;
     color: #fff;
     animation: fadeInUp 1s ease-out;
-    transition: opacity 0.5s ease;
 }
 
-.hero-content.transitioning {
-    opacity: 0.5;
+.hero-content.slide-out-left {
+    animation: contentSlideOutLeft 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.hero-content.slide-out-right {
+    animation: contentSlideOutRight 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes contentSlideOutLeft {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(-50px);
+        opacity: 0;
+    }
+}
+
+@keyframes contentSlideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(50px);
+        opacity: 0;
+    }
 }
 
 @keyframes fadeInUp {
@@ -237,6 +291,10 @@
     transform: scale(1.05);
 }
 
+.play-btn:active {
+    transform: scale(0.95);
+}
+
 .info-btn {
     background: rgba(109, 109, 110, 0.7);
     color: #fff;
@@ -245,6 +303,10 @@
 .info-btn:hover {
     background: rgba(109, 109, 110, 0.5);
     transform: scale(1.05);
+}
+
+.info-btn:active {
+    transform: scale(0.95);
 }
 
 .info-btn.wished {
@@ -273,12 +335,6 @@
         font-size: 1.1rem;
         max-width: 500px;
     }
-
-    .hero-nav-btn {
-        width: 50px;
-        height: 50px;
-        font-size: 2.5rem;
-    }
 }
 
 @media (max-width: 768px) {
@@ -303,20 +359,6 @@
     .hero-btn {
         padding: 12px 24px;
         font-size: 1rem;
-    }
-
-    .hero-nav-btn {
-        width: 40px;
-        height: 40px;
-        font-size: 2rem;
-    }
-
-    .prev-btn {
-        left: 10px;
-    }
-
-    .next-btn {
-        right: 10px;
     }
 
     .home-content {
@@ -365,12 +407,6 @@
         padding: 12px 20px;
     }
 
-    .hero-nav-btn {
-        width: 35px;
-        height: 35px;
-        font-size: 1.8rem;
-    }
-
     .home-content {
         margin-top: -30px;
     }
@@ -380,9 +416,8 @@
 @media (prefers-reduced-motion: reduce) {
     .hero-content,
     .hero-background,
-    .hero-nav-btn,
     .indicator {
-        animation: none;
-        transition: none;
+        animation: none !important;
+        transition: opacity 0.3s ease !important;
     }
 }
