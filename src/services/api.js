@@ -31,6 +31,9 @@ export const movieAPI = {
     getTopRated: (page = 1) =>
         tmdbApi.get('/movie/top_rated', { params: { page } }),
 
+    getTrending: (page = 1) =>
+        tmdbApi.get('/trending/movie/week', { params: { page } }),
+
     // 영화 검색
     searchMovies: (query, page = 1) =>
         tmdbApi.get('/search/movie', { params: { query, page } }),
