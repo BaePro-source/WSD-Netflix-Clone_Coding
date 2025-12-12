@@ -83,7 +83,7 @@
     background-position: center;
     border-radius: 8px;
     opacity: 0;
-    animation: posterFadeIn 1s ease-out forwards;
+    animation: posterFadeIn 1s ease-out forwards, posterPulse 8s ease-in-out infinite;
     transition: all 0.5s ease;
 }
 
@@ -106,6 +106,18 @@
     }
 }
 
+/* ✅ 포스터 펄스 애니메이션 */
+@keyframes posterPulse {
+    0%, 100% {
+        opacity: 0.4;
+        filter: brightness(1);
+    }
+    50% {
+        opacity: 0.5;
+        filter: brightness(1.1);
+    }
+}
+
 /* ========== 로그인 박스 ========== */
 .signin-box {
     position: relative;
@@ -119,7 +131,7 @@
     box-shadow:
             0 20px 80px rgba(0, 0, 0, 0.9),
             0 0 0 1px rgba(255, 255, 255, 0.15);
-    animation: slideUp 0.6s ease-out;
+    animation: slideUp 0.6s ease-out, boxGlow 3s ease-in-out infinite;
     border: 2px solid rgba(229, 9, 20, 0.3);
 }
 
@@ -131,6 +143,25 @@
     to {
         opacity: 1;
         transform: translateY(0) scale(1);
+    }
+}
+
+/* ✅ 빛나는 Glow 애니메이션 */
+@keyframes boxGlow {
+    0%, 100% {
+        box-shadow:
+                0 20px 80px rgba(0, 0, 0, 0.9),
+                0 0 0 1px rgba(255, 255, 255, 0.15),
+                0 0 20px rgba(229, 9, 20, 0.2);
+        border-color: rgba(229, 9, 20, 0.3);
+    }
+    50% {
+        box-shadow:
+                0 20px 80px rgba(0, 0, 0, 0.9),
+                0 0 0 1px rgba(255, 255, 255, 0.25),
+                0 0 40px rgba(229, 9, 20, 0.4),
+                0 0 60px rgba(229, 9, 20, 0.3);
+        border-color: rgba(229, 9, 20, 0.6);
     }
 }
 
@@ -388,17 +419,45 @@
 
 /* ========== 모드 전환 애니메이션 ========== */
 .signin-box.login-mode {
-    animation: modeSwitch 0.4s ease;
+    animation: slideUp 0.6s ease-out, boxGlow 3s ease-in-out infinite;
 }
 
 .signin-box.register-mode {
-    animation: modeSwitch 0.4s ease;
+    animation: slideUp 0.6s ease-out, boxGlow 3s ease-in-out infinite;
 }
 
-@keyframes modeSwitch {
-    0% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.8; transform: scale(0.98); }
-    100% { opacity: 1; transform: scale(1); }
+/* ✅ 모드 전환 시 Fade & Slide 효과 */
+.signin-box.mode-switching .signin-form,
+.signin-box.mode-switching .signin-header {
+    animation: fadeSlideOut 0.35s ease-out forwards;
+}
+
+@keyframes fadeSlideOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-15px);
+    }
+}
+
+/* 새 폼 등장 - fade out과 겹치도록 delay 조정 */
+.signin-form,
+.signin-header {
+    animation: fadeSlideIn 0.35s ease-out 0.25s both;
+}
+
+@keyframes fadeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ========== 반응형 ========== */

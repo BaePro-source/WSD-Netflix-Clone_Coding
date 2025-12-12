@@ -17,7 +17,8 @@ function SignIn() {
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const [backgroundPosters, setBackgroundPosters] = useState([]); // ✅ 배경 포스터
+    const [backgroundPosters, setBackgroundPosters] = useState([]);
+    const [isSwitching, setIsSwitching] = useState(false); // ✅ 모드 전환 중
 
     // ✅ 배경 포스터 가져오기
     useEffect(() => {
@@ -56,15 +57,26 @@ function SignIn() {
         setError('');
     };
 
+    // ✅ 로그인/회원가입 전환 with 애니메이션
     const toggleMode = () => {
-        setIsLogin(!isLogin);
-        setError('');
-        setFormData(prev => ({
-            ...prev,
-            password: '',
-            confirmPassword: '',
-            agreeTerms: false,
-        }));
+        setIsSwitching(true);
+
+        // Fade out 중간에 내용 변경 (겹치도록)
+        setTimeout(() => {
+            setIsLogin(!isLogin);
+            setError('');
+            setFormData(prev => ({
+                ...prev,
+                password: '',
+                confirmPassword: '',
+                agreeTerms: false,
+            }));
+        }, 250); // fade out 중간 (0.25초)
+
+        // 전체 애니메이션 완료 후 클래스 제거
+        setTimeout(() => {
+            setIsSwitching(false);
+        }, 600); // 전체 시간 (여유있게)
     };
 
     const handleLogin = async (e) => {
@@ -139,10 +151,10 @@ function SignIn() {
                 </div>
             </div>
 
-            <div className={`signin-box ${isLogin ? 'login-mode' : 'register-mode'}`}>
+            <div className={`signin-box ${isLogin ? 'login-mode' : 'register-mode'} ${isSwitching ? 'mode-switching' : ''}`}>
                 <div className="signin-header">
-                    <h1>로그인 </h1>
-                    <p>{isLogin ? '' : '회원가입하고 시작하기'}</p>
+                    <h1>🎬 MOVIEFLIX</h1>
+                    <p>{isLogin ? '로그인하여 계속하기' : '회원가입하고 시작하기'}</p>
                 </div>
 
                 <form onSubmit={isLogin ? handleLogin : handleRegister} className="signin-form">
