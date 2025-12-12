@@ -1,29 +1,388 @@
 /* src/styles/Home.css */
+
 .home {
-    background-color: #141414;
-    min-height: 100vh;
-    color: white;
-}
-
-.home-content {
-    padding-top: 80px; /* Navbar 높이만큼 */
-    padding-bottom: 40px;
-}
-
-/* 전체 페이지 스크롤바 스타일 */
-body::-webkit-scrollbar {
-    width: 12px;
-}
-
-body::-webkit-scrollbar-track {
     background: #141414;
+    min-height: 100vh;
 }
 
-body::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
+.home-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: #fff;
+    font-size: 1.5rem;
+}
+
+/* ========== 메인 배너 (Hero Section) ========== */
+.hero-banner {
+    position: relative;
+    height: 80vh;
+    display: flex;
+    align-items: center;
+    padding: 0 4%;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.hero-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: opacity 0.5s ease;
+}
+
+.hero-background.transitioning {
+    opacity: 0.5;
+}
+
+/* 그라디언트 오버레이 */
+.hero-gradient {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+            to right,
+            rgba(0, 0, 0, 0.9) 0%,
+            rgba(0, 0, 0, 0.6) 40%,
+            transparent 100%
+    );
+}
+
+.hero-gradient::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 20%;
+    background: linear-gradient(
+            to top,
+            rgba(20, 20, 20, 1) 0%,
+            transparent 100%
+    );
+}
+
+/* ========== 화살표 버튼 ========== */
+.hero-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    border: none;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    font-size: 3rem;
+    font-weight: 300;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.hero-nav-btn:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.8);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.hero-nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.prev-btn {
+    left: 20px;
+}
+
+.next-btn {
+    right: 20px;
+}
+
+/* ========== 인디케이터 (점) ========== */
+.hero-indicators {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+}
+
+.indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.indicator:hover {
+    background: rgba(255, 255, 255, 0.8);
+    transform: scale(1.2);
+}
+
+.indicator.active {
+    background: #e50914;
+    width: 30px;
     border-radius: 6px;
 }
 
-body::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.5);
+/* 배너 콘텐츠 */
+.hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 600px;
+    color: #fff;
+    animation: fadeInUp 1s ease-out;
+    transition: opacity 0.5s ease;
+}
+
+.hero-content.transitioning {
+    opacity: 0.5;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    line-height: 1.1;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+.hero-info {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+}
+
+.hero-rating {
+    color: #ffd700;
+    font-weight: 600;
+}
+
+.hero-year {
+    color: #999;
+    font-weight: 500;
+}
+
+.hero-overview {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: #e5e5e5;
+    margin-bottom: 30px;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
+    max-width: 550px;
+}
+
+/* 버튼들 */
+.hero-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+.hero-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-icon {
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+}
+
+.play-btn {
+    background: #fff;
+    color: #000;
+}
+
+.play-btn:hover {
+    background: rgba(255, 255, 255, 0.85);
+    transform: scale(1.05);
+}
+
+.info-btn {
+    background: rgba(109, 109, 110, 0.7);
+    color: #fff;
+}
+
+.info-btn:hover {
+    background: rgba(109, 109, 110, 0.5);
+    transform: scale(1.05);
+}
+
+.info-btn.wished {
+    background: rgba(229, 9, 20, 0.8);
+}
+
+.info-btn.wished:hover {
+    background: rgba(229, 9, 20, 1);
+}
+
+/* ========== 영화 리스트 섹션 ========== */
+.home-content {
+    position: relative;
+    z-index: 3;
+    margin-top: -100px;
+    padding: 0 4%;
+}
+
+/* ========== 반응형 ========== */
+@media (max-width: 1200px) {
+    .hero-title {
+        font-size: 3rem;
+    }
+
+    .hero-overview {
+        font-size: 1.1rem;
+        max-width: 500px;
+    }
+
+    .hero-nav-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-banner {
+        height: 70vh;
+        padding: 0 4%;
+    }
+
+    .hero-title {
+        font-size: 2rem;
+    }
+
+    .hero-info {
+        font-size: 1rem;
+    }
+
+    .hero-overview {
+        font-size: 1rem;
+        max-width: 400px;
+    }
+
+    .hero-btn {
+        padding: 12px 24px;
+        font-size: 1rem;
+    }
+
+    .hero-nav-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 2rem;
+    }
+
+    .prev-btn {
+        left: 10px;
+    }
+
+    .next-btn {
+        right: 10px;
+    }
+
+    .home-content {
+        margin-top: -50px;
+    }
+
+    .hero-indicators {
+        bottom: 20px;
+    }
+
+    .indicator {
+        width: 8px;
+        height: 8px;
+    }
+
+    .indicator.active {
+        width: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-banner {
+        height: 60vh;
+        padding: 0 4%;
+    }
+
+    .hero-title {
+        font-size: 1.5rem;
+    }
+
+    .hero-overview {
+        font-size: 0.9rem;
+        max-width: 300px;
+        margin-bottom: 20px;
+    }
+
+    .hero-buttons {
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .hero-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 12px 20px;
+    }
+
+    .hero-nav-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 1.8rem;
+    }
+
+    .home-content {
+        margin-top: -30px;
+    }
+}
+
+/* ========== 접근성 ========== */
+@media (prefers-reduced-motion: reduce) {
+    .hero-content,
+    .hero-background,
+    .hero-nav-btn,
+    .indicator {
+        animation: none;
+        transition: none;
+    }
 }
