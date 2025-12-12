@@ -115,3 +115,30 @@
         font-size: 18px;
     }
 }
+
+/* 기존 MovieCard.css에 다음 스타일을 추가하세요 */
+
+/* 장르 배지 스타일 */
+.movie-genres {
+    margin: 8px 0;
+}
+
+.genre-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    background: rgba(229, 9, 20, 0.2);
+    border: 1px solid rgba(229, 9, 20, 0.5);
+    border-radius: 12px;
+    font-size: 0.75rem;
+    color: #e50914;
+    font-weight: 500;
+}
+
+/* 다크 모드 대응 */
+@media (prefers-color-scheme: dark) {
+    .genre-badge {
+        background: rgba(229, 9, 20, 0.15);
+        border-color: rgba(229, 9, 20, 0.4);
+        color: #ff6b6b;
+    }
+}
