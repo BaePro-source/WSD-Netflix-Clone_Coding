@@ -58,6 +58,10 @@ function Home() {
     const fetchNowPlaying = useCallback(() => movieAPI.getNowPlaying(), []);
     const fetchUpcoming = useCallback(() => movieAPI.getUpcoming(), []);
     const fetchTopRated = useCallback(() => movieAPI.getTopRated(), []);
+    // ✅ 추가 섹션용 API 호출
+    const fetchPopular2 = useCallback(() => movieAPI.getPopular(2), []);
+    const fetchTopRated2 = useCallback(() => movieAPI.getTopRated(2), []);
+    const fetchNowPlaying2 = useCallback(() => movieAPI.getNowPlaying(2), []);
 
     const handleNext = useCallback(() => {
         if (isAnimating) return;
@@ -232,12 +236,15 @@ function Home() {
                 </div>
             </div>
 
-            {/* 영화 리스트 섹션 */}
+            {/* ✅ 영화 리스트 섹션 - 7개로 확장! */}
             <div className="home-content">
                 <MovieList title="🔥 인기 영화" fetchMovies={fetchPopular} />
                 <MovieList title="🎬 현재 상영중" fetchMovies={fetchNowPlaying} />
                 <MovieList title="🎉 개봉 예정" fetchMovies={fetchUpcoming} />
                 <MovieList title="⭐ 높은 평점" fetchMovies={fetchTopRated} />
+                <MovieList title="🎭 액션 & 스릴러" fetchMovies={fetchPopular2} />
+                <MovieList title="💕 로맨스 & 드라마" fetchMovies={fetchTopRated2} />
+                <MovieList title="🌟 다시 보기 추천" fetchMovies={fetchNowPlaying2} />
             </div>
         </div>
     );
