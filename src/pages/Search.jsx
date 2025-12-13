@@ -1,8 +1,8 @@
 // src/pages/Search.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import MovieCard from '../components/MovieCard'; // ✅ MovieCard import
+import MovieCard from '../components/MovieCard';
 import { movieAPI, getImageUrl } from '../services/api';
 import { toggleWishlist, isInWishlist } from '../utils/localStorage';
 import '../styles/Search.css';
@@ -13,7 +13,7 @@ function Search() {
     const [filteredMovies, setFilteredMovies] = useState([]);
     const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [viewMode, setViewMode] = useState('grid');
+    const [viewMode, setViewMode] = useState('scroll'); // ✅ 'scroll' 또는 'table'
 
     // 필터링 상태
     const [genres, setGenres] = useState([]);
@@ -22,10 +22,33 @@ function Search() {
     const [selectedYear, setSelectedYear] = useState('');
     const [sortBy, setSortBy] = useState('popularity.desc');
 
-    // 페이지네이션
+    // 페이지네이션 (Table View용)
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
-    const [wishlistUpdate, setWishlistUpdate] = useState(0); // ✅ 찜 상태 업데이트용
+
+    // 무한 스크롤 상태
+    const [hasMore, setHasMore] = useState(true);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const lastMovieRef = useRef(null);
+    const [showTopButton, setShowTopButton] = useState(false);
+
+    const [wishlistVersion, setWishlistVersion] = useState(0); // ✅ 찜 상태 업데이트용
+
+    // ✅ View 모드에 따른 body scroll 제어
+    useEffect(() => {
+        if (viewMode === 'table') {
+            document.body.style.overflow = 'hidden';
+            document.body.style.height = '100vh';
+        } else {
+            document.body.style.overflow = 'auto';
+            document.body.style.height = 'auto';
+        }
+
+        return () => {
+            document.body.style.overflow = 'auto';
+            document.body.style.height = 'auto';
+        };
+    }, [viewMode]);
 
     // 장르 목록 가져오기
     useEffect(() => {
@@ -49,34 +72,113 @@ function Search() {
         }
     }, [location.search]);
 
-    // 초기 인기 영화 로드 및 검색어 변경 시 재검색
+    // View 모드 변경 시 초기화
     useEffect(() => {
-        fetchMovies();
-    }, [currentPage, searchQuery]);
+        setCurrentPage(1);
+        setMovies([]);
+        setFilteredMovies([]);
+        setHasMore(true);
+        setIsLoadingMore(false);
+        fetchMovies(1, false);
+        window.scrollTo(0, 0);
+    }, [viewMode]);
+
+    // 검색어 변경 시 재검색
+    useEffect(() => {
+        if (viewMode === 'table') {
+            fetchMovies(currentPage, false);
+        } else {
+            fetchMovies(1, false);
+        }
+    }, [searchQuery]);
+
+    // Table View 페이지 변경
+    useEffect(() => {
+        if (viewMode === 'table' && currentPage > 1) {
+            fetchMovies(currentPage, false);
+        }
+    }, [currentPage]);
 
     // 영화 검색/필터링
-    const fetchMovies = async () => {
-        setLoading(true);
+    const fetchMovies = async (page = 1, append = false) => {
+        if (page === 1) {
+            setLoading(true);
+        } else {
+            setIsLoadingMore(true);
+        }
+
         try {
             let response;
 
             if (searchQuery.trim()) {
                 // 검색어가 있으면 검색 API 사용
-                response = await movieAPI.searchMovies(searchQuery, currentPage);
+                response = await movieAPI.searchMovies(searchQuery, page);
             } else {
                 // 검색어가 없으면 인기 영화 가져오기
-                response = await movieAPI.getPopular(currentPage);
+                response = await movieAPI.getPopular(page);
             }
 
-            setMovies(response.data.results);
+            const results = response.data.results;
+
+            if (append) {
+                setMovies(prev => [...prev, ...results]);
+            } else {
+                setMovies(results);
+            }
+
             setTotalPages(response.data.total_pages);
-            applyFilters(response.data.results);
+            setHasMore(page < response.data.total_pages);
+
+            // 필터 적용
+            applyFilters(append ? [...movies, ...results] : results);
         } catch (error) {
             console.error('영화 가져오기 실패:', error);
         } finally {
             setLoading(false);
+            setIsLoadingMore(false);
         }
     };
+
+    // 무한 스크롤 - 더 많은 영화 로드
+    const loadMoreMovies = async () => {
+        if (isLoadingMore || !hasMore || viewMode === 'table') return;
+
+        const nextPage = currentPage + 1;
+        setCurrentPage(nextPage);
+        await fetchMovies(nextPage, true);
+    };
+
+    // 무한 스크롤 Intersection Observer
+    useEffect(() => {
+        if (viewMode !== 'scroll' || !hasMore || isLoadingMore) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    loadMoreMovies();
+                }
+            },
+            { threshold: 0.5 }
+        );
+
+        if (lastMovieRef.current) {
+            observer.observe(lastMovieRef.current);
+        }
+
+        return () => {
+            if (observer) observer.disconnect();
+        };
+    }, [viewMode, hasMore, isLoadingMore, currentPage]);
+
+    // 스크롤 감지 (맨 위로 버튼)
+    useEffect(() => {
+        const handleScroll = () => {
+            setShowTopButton(window.scrollY > 500);
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     // 필터 적용 (클라이언트 사이드)
     const applyFilters = (movieList) => {
@@ -85,7 +187,7 @@ function Search() {
         // 장르 필터
         if (selectedGenre) {
             filtered = filtered.filter(movie =>
-                movie.genre_ids.includes(parseInt(selectedGenre))
+                movie.genre_ids?.includes(parseInt(selectedGenre))
             );
         }
 
@@ -116,9 +218,9 @@ function Search() {
                 case 'vote_average.asc':
                     return a.vote_average - b.vote_average;
                 case 'release_date.desc':
-                    return new Date(b.release_date) - new Date(a.release_date);
+                    return new Date(b.release_date || 0) - new Date(a.release_date || 0);
                 case 'release_date.asc':
-                    return new Date(a.release_date) - new Date(b.release_date);
+                    return new Date(a.release_date || 0) - new Date(b.release_date || 0);
                 case 'title.asc':
                     return a.title.localeCompare(b.title);
                 case 'title.desc':
@@ -140,7 +242,9 @@ function Search() {
     const handleSearch = (e) => {
         e.preventDefault();
         setCurrentPage(1);
-        fetchMovies();
+        setMovies([]);
+        setFilteredMovies([]);
+        fetchMovies(1, false);
     };
 
     // 필터 초기화
@@ -151,21 +255,28 @@ function Search() {
         setSortBy('popularity.desc');
         setSearchQuery('');
         setCurrentPage(1);
+        setMovies([]);
+        setFilteredMovies([]);
+        setHasMore(true);
     };
 
-    // ✅ Bottom-Up: 자식(MovieCard)으로부터 받은 이벤트 처리
+    // ✅ 찜하기 토글 - 리렌더링 트리거
     const handleWishlistToggle = (movie) => {
-        console.log('부모에서 찜하기 이벤트 받음:', movie.title);
         toggleWishlist(movie);
-        setWishlistUpdate(prev => prev + 1); // 강제 리렌더링
+        setWishlistVersion(v => v + 1);
     };
 
-    // 페이지 변경
+    // Table View 페이지 변경
     const handlePageChange = (newPage) => {
         if (newPage >= 1 && newPage <= totalPages) {
             setCurrentPage(newPage);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
+    };
+
+    // 맨 위로 스크롤
+    const scrollToTop = () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     // 년도 옵션 생성 (현재 년도부터 1900년까지)
@@ -188,7 +299,7 @@ function Search() {
                         className="search-input-main"
                     />
                     <button type="submit" className="search-button-main">
-                        검색
+                        🔍 검색
                     </button>
                 </form>
 
@@ -274,10 +385,10 @@ function Search() {
                         </span>
                         <div className="view-toggle">
                             <button
-                                className={`view-button ${viewMode === 'grid' ? 'active' : ''}`}
-                                onClick={() => setViewMode('grid')}
+                                className={`view-button ${viewMode === 'scroll' ? 'active' : ''}`}
+                                onClick={() => setViewMode('scroll')}
                             >
-                                📜 그리드 뷰
+                                📜 무한 스크롤
                             </button>
                             <button
                                 className={`view-button ${viewMode === 'table' ? 'active' : ''}`}
@@ -290,7 +401,7 @@ function Search() {
                 </div>
 
                 {/* 로딩 */}
-                {loading && (
+                {loading && filteredMovies.length === 0 && (
                     <div className="loading">
                         <div className="spinner"></div>
                         <p>영화를 불러오는 중...</p>
@@ -306,86 +417,130 @@ function Search() {
                     </div>
                 )}
 
-                {/* 그리드 뷰 */}
-                {!loading && viewMode === 'grid' && filteredMovies.length > 0 && (
-                    <div className="movie-grid">
-                        {filteredMovies.map((movie) => (
-                            /* ✅ MovieCard 사용 + Bottom-Up 콜백 전달 */
-                            <MovieCard
-                                key={movie.id}
-                                movie={movie}
-                                onWishlistToggle={handleWishlistToggle}
-                            />
-                        ))}
-                    </div>
+                {/* 무한 스크롤 뷰 */}
+                {viewMode === 'scroll' && filteredMovies.length > 0 && (
+                    <>
+                        <div className="movie-grid">
+                            {filteredMovies.map((movie, index) => (
+                                <div
+                                    key={`${movie.id}-${index}`}
+                                    ref={index === filteredMovies.length - 1 ? lastMovieRef : null}
+                                >
+                                    <MovieCard
+                                        movie={movie}
+                                        onWishlistToggle={handleWishlistToggle}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+
+                        {isLoadingMore && (
+                            <div className="loading-more">
+                                <div className="spinner"></div>
+                                <p>더 많은 영화를 불러오는 중...</p>
+                            </div>
+                        )}
+
+                        {!hasMore && !isLoadingMore && filteredMovies.length > 0 && (
+                            <div className="no-more">
+                                모든 영화를 불러왔습니다! 🎉
+                            </div>
+                        )}
+                    </>
                 )}
 
                 {/* 테이블 뷰 */}
-                {!loading && viewMode === 'table' && filteredMovies.length > 0 && (
-                    <div className="movie-table">
-                        <div className="table-header">
-                            <div className="header-poster">포스터</div>
-                            <div className="header-title">제목</div>
-                            <div className="header-rating">평점</div>
-                            <div className="header-date">개봉일</div>
-                            <div className="header-overview">줄거리</div>
-                            <div className="header-wishlist">찜</div>
+                {viewMode === 'table' && filteredMovies.length > 0 && (
+                    <div className="table-view-wrapper">
+                        <div className="movie-table">
+                            <div className="table-header">
+                                <div className="header-poster">포스터</div>
+                                <div className="header-title">제목</div>
+                                <div className="header-rating">평점</div>
+                                <div className="header-date">개봉일</div>
+                                <div className="header-overview">줄거리</div>
+                                <div className="header-wishlist">찜</div>
+                            </div>
+
+                            <div className="table-body">
+                                {filteredMovies.map((movie) => (
+                                    <div key={movie.id} className="table-row">
+                                        <div className="cell-poster">
+                                            <img
+                                                src={getImageUrl(movie.poster_path, 'w200')}
+                                                alt={movie.title}
+                                            />
+                                        </div>
+                                        <div className="cell-title">{movie.title}</div>
+                                        <div className="cell-rating">
+                                            ⭐ {movie.vote_average?.toFixed(1)}
+                                        </div>
+                                        <div className="cell-date">{movie.release_date}</div>
+                                        <div className="cell-overview">
+                                            {movie.overview || '줄거리 정보가 없습니다.'}
+                                        </div>
+                                        <div className="cell-wishlist">
+                                            <button
+                                                className={`wishlist-table-btn ${isInWishlist(movie.id) ? 'active' : ''}`}
+                                                onClick={() => handleWishlistToggle(movie)}
+                                            >
+                                                {isInWishlist(movie.id) ? '❤️' : '🤍'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
 
-                        {filteredMovies.map((movie) => (
-                            <div key={movie.id} className="table-row">
-                                <div className="cell-poster">
-                                    <img
-                                        src={getImageUrl(movie.poster_path, 'w200')}
-                                        alt={movie.title}
-                                    />
-                                </div>
-                                <div className="cell-title">{movie.title}</div>
-                                <div className="cell-rating">
-                                    ⭐ {movie.vote_average?.toFixed(1)}
-                                </div>
-                                <div className="cell-date">{movie.release_date}</div>
-                                <div className="cell-overview">
-                                    {movie.overview || '줄거리 정보가 없습니다.'}
-                                </div>
-                                <div className="cell-wishlist">
-                                    <button
-                                        className={`wishlist-table-btn ${isInWishlist(movie.id) ? 'active' : ''}`}
-                                        onClick={() => handleWishlistToggle(movie)}
-                                    >
-                                        {isInWishlist(movie.id) ? '💖' : '🤍'}
-                                    </button>
-                                </div>
+                        {/* Table View 페이지네이션 */}
+                        <div className="pagination">
+                            <button
+                                className="page-button"
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                            >
+                                ← 이전
+                            </button>
+
+                            <div className="page-numbers">
+                                {[...Array(Math.min(5, totalPages))].map((_, i) => {
+                                    const pageNum = currentPage - 2 + i;
+                                    if (pageNum < 1 || pageNum > totalPages) return null;
+                                    return (
+                                        <button
+                                            key={pageNum}
+                                            className={`page-number ${currentPage === pageNum ? 'active' : ''}`}
+                                            onClick={() => handlePageChange(pageNum)}
+                                        >
+                                            {pageNum}
+                                        </button>
+                                    );
+                                })}
                             </div>
-                        ))}
-                    </div>
-                )}
 
-                {/* 페이지네이션 */}
-                {!loading && filteredMovies.length > 0 && (
-                    <div className="pagination">
-                        <button
-                            className="page-button"
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
-                        >
-                            ← 이전
-                        </button>
+                            <span className="page-info">
+                                {currentPage} / {totalPages}
+                            </span>
 
-                        <span className="page-info">
-                            {currentPage} / {totalPages}
-                        </span>
-
-                        <button
-                            className="page-button"
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages}
-                        >
-                            다음 →
-                        </button>
+                            <button
+                                className="page-button"
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                            >
+                                다음 →
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>
+
+            {/* 맨 위로 버튼 (무한 스크롤에서만) */}
+            {showTopButton && viewMode === 'scroll' && (
+                <button className="scroll-to-top" onClick={scrollToTop}>
+                    ⬆️
+                    <span>TOP</span>
+                </button>
+            )}
         </div>
     );
 }
