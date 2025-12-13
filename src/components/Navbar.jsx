@@ -24,6 +24,18 @@ function Navbar() {
         }
     };
 
+    // ✅ 돋보기 버튼 클릭 핸들러 추가
+    const handleSearchIconClick = () => {
+        if (searchQuery.trim()) {
+            // 검색어가 있으면 검색 실행
+            navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+            setSearchQuery('');
+        } else {
+            // 검색어가 없으면 Search 페이지로 이동
+            navigate('/search');
+        }
+    };
+
     return (
         <nav className="navbar">
             <div className="navbar-container">
@@ -62,7 +74,12 @@ function Navbar() {
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="search-input"
                         />
-                        <button type="submit" className="search-button">
+                        {/* ✅ type을 button으로 변경하고 onClick 추가 */}
+                        <button
+                            type="button"
+                            className="search-button"
+                            onClick={handleSearchIconClick}
+                        >
                             🔍
                         </button>
                     </form>
