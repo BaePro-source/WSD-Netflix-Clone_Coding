@@ -7,11 +7,26 @@
 
 .home-loading {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     color: #fff;
     font-size: 1.5rem;
+    gap: 20px;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #e50914;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
 /* ========== 메인 배너 (Hero Section) ========== */
@@ -134,6 +149,53 @@
     );
 }
 
+/* ========== 네비게이션 화살표 (좌우) ========== */
+.hero-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 60px;
+    height: 60px;
+    background: rgba(0, 0, 0, 0.6);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.hero-banner:hover .hero-nav-btn {
+    opacity: 1;
+}
+
+.hero-nav-btn:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.9);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.hero-nav-btn:active:not(:disabled) {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.hero-nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.hero-nav-prev {
+    left: 20px;
+}
+
+.hero-nav-next {
+    right: 20px;
+}
+
 /* ========== 인디케이터 (점) ========== */
 .hero-indicators {
     position: absolute;
@@ -175,7 +237,7 @@
 .hero-content {
     position: relative;
     z-index: 3;
-    max-width: 600px;
+    max-width: 650px;
     color: #fff;
     animation: fadeInUp 1s ease-out;
 }
@@ -235,16 +297,30 @@
     align-items: center;
     margin-bottom: 20px;
     font-size: 1.1rem;
+    flex-wrap: wrap;
 }
 
 .hero-rating {
     color: #ffd700;
     font-weight: 600;
+    background: rgba(255, 215, 0, 0.15);
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
 }
 
 .hero-year {
     color: #999;
     font-weight: 500;
+}
+
+.hero-popularity {
+    color: #ff6b6b;
+    font-weight: 500;
+    background: rgba(255, 107, 107, 0.15);
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 107, 107, 0.3);
 }
 
 .hero-overview {
@@ -253,13 +329,14 @@
     color: #e5e5e5;
     margin-bottom: 30px;
     text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
-    max-width: 550px;
+    max-width: 600px;
 }
 
 /* 버튼들 */
 .hero-buttons {
     display: flex;
     gap: 15px;
+    flex-wrap: wrap;
 }
 
 .hero-btn {
@@ -323,6 +400,7 @@
     z-index: 3;
     margin-top: -100px;
     padding: 0 4%;
+    padding-bottom: 60px;
 }
 
 /* ========== 반응형 ========== */
@@ -334,6 +412,11 @@
     .hero-overview {
         font-size: 1.1rem;
         max-width: 500px;
+    }
+
+    .hero-nav-btn {
+        width: 50px;
+        height: 50px;
     }
 }
 
@@ -348,7 +431,8 @@
     }
 
     .hero-info {
-        font-size: 1rem;
+        font-size: 0.95rem;
+        gap: 12px;
     }
 
     .hero-overview {
@@ -363,6 +447,7 @@
 
     .home-content {
         margin-top: -50px;
+        padding: 0 3%;
     }
 
     .hero-indicators {
@@ -377,6 +462,21 @@
     .indicator.active {
         width: 20px;
     }
+
+    /* 모바일에서 화살표 항상 표시 */
+    .hero-nav-btn {
+        opacity: 0.7;
+        width: 45px;
+        height: 45px;
+    }
+
+    .hero-nav-prev {
+        left: 10px;
+    }
+
+    .hero-nav-next {
+        right: 10px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -387,6 +487,17 @@
 
     .hero-title {
         font-size: 1.5rem;
+    }
+
+    .hero-info {
+        font-size: 0.85rem;
+        gap: 8px;
+    }
+
+    .hero-rating,
+    .hero-popularity {
+        padding: 3px 10px;
+        font-size: 0.85rem;
     }
 
     .hero-overview {
@@ -409,6 +520,17 @@
 
     .home-content {
         margin-top: -30px;
+        padding: 0 2%;
+    }
+
+    .hero-nav-btn {
+        width: 40px;
+        height: 40px;
+    }
+
+    .hero-nav-btn svg {
+        width: 24px;
+        height: 24px;
     }
 }
 
@@ -416,7 +538,8 @@
 @media (prefers-reduced-motion: reduce) {
     .hero-content,
     .hero-background,
-    .indicator {
+    .indicator,
+    .hero-nav-btn {
         animation: none !important;
         transition: opacity 0.3s ease !important;
     }
