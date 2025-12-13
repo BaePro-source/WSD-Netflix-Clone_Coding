@@ -1,21 +1,238 @@
 // src/pages/Home.jsx
-import React, { useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Navbar from '../components/Navbar';
 import MovieList from '../components/MovieList';
-import { movieAPI } from '../services/api';
+import { movieAPI, getImageUrl } from '../services/api';
+import { toggleWishlist, isInWishlist } from '../utils/localStorage';
 import '../styles/Home.css';
 
 function Home() {
-    // useCallback으로 함수 메모이제이션
+    const [featuredMovies, setFeaturedMovies] = useState([]);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [nextIndex, setNextIndex] = useState(null);
+    const [isWished, setIsWished] = useState(false);
+    const [slideDirection, setSlideDirection] = useState('');
+    const [isAnimating, setIsAnimating] = useState(false);
+
+    // 메인 배너용 영화들 가져오기
+    useEffect(() => {
+        const fetchFeaturedMovies = async () => {
+            try {
+                const response = await movieAPI.getPopular();
+                const movies = response.data.results;
+                const topMovies = movies
+                    .filter(m => m.vote_average > 7 && m.backdrop_path)
+                    .slice(0, 5);
+                setFeaturedMovies(topMovies);
+                if (topMovies.length > 0) {
+                    setIsWished(isInWishlist(topMovies[0].id));
+                }
+            } catch (error) {
+                console.error('Featured 영화 로딩 실패:', error);
+            }
+        };
+
+        fetchFeaturedMovies();
+    }, []);
+
+    // 자동 슬라이드 (5초마다)
+    useEffect(() => {
+        if (featuredMovies.length === 0 || isAnimating) return;
+
+        const autoSlide = setInterval(() => {
+            handleNext();
+        }, 5000);
+
+        return () => clearInterval(autoSlide);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [featuredMovies.length, isAnimating, currentIndex]);
+
+    // 현재 영화가 바뀔 때마다 찜 상태 업데이트
+    useEffect(() => {
+        if (featuredMovies.length > 0) {
+            setIsWished(isInWishlist(featuredMovies[currentIndex].id));
+        }
+    }, [currentIndex, featuredMovies]);
+
     const fetchPopular = useCallback(() => movieAPI.getPopular(), []);
     const fetchNowPlaying = useCallback(() => movieAPI.getNowPlaying(), []);
     const fetchUpcoming = useCallback(() => movieAPI.getUpcoming(), []);
     const fetchTopRated = useCallback(() => movieAPI.getTopRated(), []);
 
+    const handleNext = useCallback(() => {
+        if (isAnimating) return;
+
+        const newIndex = currentIndex === featuredMovies.length - 1 ? 0 : currentIndex + 1;
+        setNextIndex(newIndex);
+        setSlideDirection('left');
+        setIsAnimating(true);
+
+        setTimeout(() => {
+            setCurrentIndex(newIndex);
+            setNextIndex(null);
+            setSlideDirection('');
+            setIsAnimating(false);
+        }, 600);
+    }, [isAnimating, currentIndex, featuredMovies.length]);
+
+    const handlePrev = useCallback(() => {
+        if (isAnimating) return;
+
+        const newIndex = currentIndex === 0 ? featuredMovies.length - 1 : currentIndex - 1;
+        setNextIndex(newIndex);
+        setSlideDirection('right');
+        setIsAnimating(true);
+
+        setTimeout(() => {
+            setCurrentIndex(newIndex);
+            setNextIndex(null);
+            setSlideDirection('');
+            setIsAnimating(false);
+        }, 600);
+    }, [isAnimating, currentIndex, featuredMovies.length]);
+
+    const goToSlide = (index) => {
+        if (isAnimating || index === currentIndex) return;
+
+        const direction = index > currentIndex ? 'left' : 'right';
+        setNextIndex(index);
+        setSlideDirection(direction);
+        setIsAnimating(true);
+
+        setTimeout(() => {
+            setCurrentIndex(index);
+            setNextIndex(null);
+            setSlideDirection('');
+            setIsAnimating(false);
+        }, 600);
+    };
+
+    const handleWishlistToggle = () => {
+        const currentMovie = featuredMovies[currentIndex];
+        if (currentMovie) {
+            toggleWishlist(currentMovie);
+            setIsWished(!isWished);
+        }
+    };
+
+    const handlePlayClick = () => {
+        alert('재생 기능은 준비중입니다.');
+    };
+
+    if (featuredMovies.length === 0) {
+        return (
+            <div className="home">
+                <Navbar />
+                <div className="home-loading">
+                    <div className="loading-spinner"></div>
+                    <p>영화 로딩 중...</p>
+                </div>
+            </div>
+        );
+    }
+
+    const currentMovie = featuredMovies[currentIndex];
+    const nextMovie = nextIndex !== null ? featuredMovies[nextIndex] : null;
+
     return (
         <div className="home">
             <Navbar />
 
+            {/* 메인 배너 캐러셀 */}
+            <div className="hero-banner">
+                {/* 다음 영화 배경 */}
+                {nextMovie && (
+                    <div
+                        className={`hero-background next-background slide-in-${slideDirection === 'left' ? 'right' : 'left'}`}
+                        style={{
+                            backgroundImage: `url(${getImageUrl(nextMovie.backdrop_path, 'original')})`
+                        }}
+                    >
+                        <div className="hero-gradient"></div>
+                    </div>
+                )}
+
+                {/* 현재 영화 배경 */}
+                <div
+                    className={`hero-background current-background ${slideDirection ? `slide-out-${slideDirection}` : ''}`}
+                    style={{
+                        backgroundImage: `url(${getImageUrl(currentMovie.backdrop_path, 'original')})`
+                    }}
+                >
+                    <div className="hero-gradient"></div>
+                </div>
+
+                {/* 네비게이션 화살표 */}
+                <button
+                    className="hero-nav-btn hero-nav-prev"
+                    onClick={handlePrev}
+                    disabled={isAnimating}
+                    aria-label="이전 영화"
+                >
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                    </svg>
+                </button>
+
+                <button
+                    className="hero-nav-btn hero-nav-next"
+                    onClick={handleNext}
+                    disabled={isAnimating}
+                    aria-label="다음 영화"
+                >
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                    </svg>
+                </button>
+
+                {/* 콘텐츠 */}
+                <div className={`hero-content ${slideDirection ? `slide-out-${slideDirection}` : ''}`}>
+                    <h1 className="hero-title">{currentMovie.title || currentMovie.name}</h1>
+
+                    <div className="hero-info">
+                        <span className="hero-rating">⭐ {currentMovie.vote_average?.toFixed(1)}</span>
+                        <span className="hero-year">
+                            {(currentMovie.release_date || currentMovie.first_air_date)?.split('-')[0]}
+                        </span>
+                        <span className="hero-popularity">🔥 인기도: {currentMovie.popularity?.toFixed(0)}</span>
+                    </div>
+
+                    <p className="hero-overview">
+                        {currentMovie.overview?.length > 200
+                            ? `${currentMovie.overview.substring(0, 200)}...`
+                            : currentMovie.overview || '줄거리 정보가 없습니다.'}
+                    </p>
+
+                    <div className="hero-buttons">
+                        <button className="hero-btn play-btn" onClick={handlePlayClick}>
+                            <span className="btn-icon">▶</span>
+                            재생
+                        </button>
+                        <button
+                            className={`hero-btn info-btn ${isWished ? 'wished' : ''}`}
+                            onClick={handleWishlistToggle}
+                        >
+                            <span className="btn-icon">{isWished ? '✓' : '+'}</span>
+                            {isWished ? '찜 완료' : '내가 찜한 콘텐츠'}
+                        </button>
+                    </div>
+                </div>
+
+                {/* 인디케이터 */}
+                <div className="hero-indicators">
+                    {featuredMovies.map((_, index) => (
+                        <button
+                            key={index}
+                            className={`indicator ${index === currentIndex ? 'active' : ''}`}
+                            onClick={() => goToSlide(index)}
+                            aria-label={`${index + 1}번째 영화로 이동`}
+                            disabled={isAnimating}
+                        />
+                    ))}
+                </div>
+            </div>
+
+            {/* 영화 리스트 섹션 */}
             <div className="home-content">
                 <MovieList title="🔥 인기 영화" fetchMovies={fetchPopular} />
                 <MovieList title="🎬 현재 상영중" fetchMovies={fetchNowPlaying} />
