@@ -38,7 +38,7 @@
     transform: scale(1.1);
 }
 
-/* 찜하기 버튼 */
+/* ========== 찜하기 버튼 (호버 시에만 표시!) ========== */
 .wishlist-btn {
     position: absolute;
     top: 10px;
@@ -56,6 +56,15 @@
     align-items: center;
     justify-content: center;
     backdrop-filter: blur(10px);
+    /* ✅ 기본 상태: 숨김 */
+    opacity: 0;
+    transform: scale(0.8);
+}
+
+/* ✅ 카드에 호버 시 찜 버튼 나타남 */
+.movie-card:hover .wishlist-btn {
+    opacity: 1;
+    transform: scale(1);
 }
 
 .wishlist-btn:hover {
@@ -63,7 +72,10 @@
     transform: scale(1.2);
 }
 
+/* ✅ 찜한 상태는 항상 보임! */
 .wishlist-btn.wished {
+    opacity: 1;
+    transform: scale(1);
     background: rgba(229, 9, 20, 0.85);
 }
 
