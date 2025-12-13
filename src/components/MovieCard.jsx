@@ -1,6 +1,5 @@
 // src/components/MovieCard.jsx
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { getImageUrl } from '../services/api';
 import { isInWishlist } from '../utils/localStorage';
 import '../styles/MovieCard.css';
@@ -29,7 +28,6 @@ const GENRES = {
 };
 
 function MovieCard({ movie, onWishlistToggle }) {
-    const navigate = useNavigate();
     const { title, poster_path, vote_average, release_date, overview, genre_ids } = movie;
     const [isWished, setIsWished] = useState(false);
 
@@ -38,7 +36,7 @@ function MovieCard({ movie, onWishlistToggle }) {
     }, [movie.id]);
 
     const handleWishlistClick = (e) => {
-        e.stopPropagation();
+        e.stopPropagation(); // 부모 클릭 이벤트 방지
 
         if (onWishlistToggle) {
             onWishlistToggle(movie);
@@ -47,11 +45,10 @@ function MovieCard({ movie, onWishlistToggle }) {
         setIsWished(!isWished);
     };
 
-    const handleCardClick = () => {
-        if (navigate) {
-            navigate(`/movie/${movie.id}`);
-        }
-    };
+    // ✅ 카드 클릭 핸들러 제거 - 아무 동작도 안 함
+    // const handleCardClick = () => {
+    //     navigate(`/movie/${movie.id}`);
+    // };
 
     // 장르 이름 가져오기 (최대 2개)
     const getGenreNames = () => {
@@ -66,7 +63,8 @@ function MovieCard({ movie, onWishlistToggle }) {
     const genreNames = getGenreNames();
 
     return (
-        <div className="movie-card" onClick={handleCardClick}>
+        // ✅ onClick 제거 - 클릭해도 아무 반응 없음
+        <div className="movie-card">
             {/* 포스터 영역 */}
             <div className="movie-poster-wrapper">
                 <img
