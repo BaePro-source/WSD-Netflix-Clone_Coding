@@ -1,29 +1,54 @@
 /* src/styles/MovieCard.css */
+
 .movie-card {
+    position: relative;
     min-width: 200px;
     max-width: 200px;
+    height: 300px;
+    border-radius: 12px;
+    overflow: hidden;
     cursor: pointer;
-    transition: transform 0.3s ease, z-index 0s 0.3s;
-    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, z-index 0s 0.3s;
+    background: #1a1a1a;
 }
 
 .movie-card:hover {
+    transform: translateY(-8px) scale(1.05);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+    z-index: 100;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, z-index 0s;
+}
+
+/* 포스터 래퍼 */
+.movie-poster-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* 포스터 이미지 */
+.movie-poster {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.movie-card:hover .movie-poster {
     transform: scale(1.1);
-    z-index: 10;
-    transition: transform 0.3s ease, z-index 0s;
 }
 
 /* 찜하기 버튼 */
 .wishlist-btn {
     position: absolute;
-    top: 8px;
-    right: 8px;
-    background: rgba(0, 0, 0, 0.7);
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.75);
     border: none;
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    font-size: 20px;
+    width: 42px;
+    height: 42px;
+    font-size: 22px;
     cursor: pointer;
     z-index: 20;
     transition: all 0.3s ease;
@@ -34,91 +59,86 @@
 }
 
 .wishlist-btn:hover {
-    background: rgba(0, 0, 0, 0.9);
-    transform: scale(1.15);
+    background: rgba(0, 0, 0, 0.95);
+    transform: scale(1.2);
 }
 
 .wishlist-btn.wished {
-    background: rgba(229, 9, 20, 0.9);
+    background: rgba(229, 9, 20, 0.85);
 }
 
 .wishlist-btn.wished:hover {
     background: rgba(229, 9, 20, 1);
+    transform: scale(1.2);
 }
 
-.movie-poster {
-    width: 100%;
-    height: 300px;
-    object-fit: cover;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+/* Hover 시 나타나는 정보 오버레이 */
+.movie-info-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(
+            to top,
+            rgba(0, 0, 0, 0.98) 0%,
+            rgba(0, 0, 0, 0.95) 50%,
+            rgba(0, 0, 0, 0.85) 70%,
+            transparent 100%
+    );
+    padding: 20px 16px 16px;
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 85%;
+    overflow-y: auto;
 }
 
-.movie-info {
-    margin-top: 8px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
+.movie-card:hover .movie-info-overlay {
+    transform: translateY(0);
 }
 
-.movie-card:hover .movie-info {
-    opacity: 1;
+/* 정보 컨텐츠 */
+.movie-info-content {
+    color: white;
 }
 
 .movie-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: #fff;
-    margin: 0 0 4px 0;
-    white-space: nowrap;
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+    line-height: 1.3;
+    color: #ffffff;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
     overflow: hidden;
     text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
-.movie-details {
+/* 메타 정보 (평점, 개봉년도) */
+.movie-meta {
     display: flex;
-    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+    font-size: 13px;
     align-items: center;
-    font-size: 12px;
 }
 
 .movie-rating {
-    color: #ffd700;
+    background: rgba(255, 193, 7, 0.2);
+    padding: 3px 8px;
+    border-radius: 16px;
     font-weight: 600;
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.3);
 }
 
 .movie-year {
-    color: #999;
+    color: #aaa;
+    font-weight: 500;
 }
 
-/* 반응형 */
-@media (max-width: 768px) {
-    .movie-card {
-        min-width: 150px;
-        max-width: 150px;
-    }
-
-    .movie-poster {
-        height: 225px;
-    }
-
-    .movie-title {
-        font-size: 12px;
-    }
-
-    .movie-details {
-        font-size: 11px;
-    }
-
-    .wishlist-btn {
-        width: 35px;
-        height: 35px;
-        font-size: 18px;
-    }
-}
-
-/* 기존 MovieCard.css에 다음 스타일을 추가하세요 */
-
-/* 장르 배지 스타일 */
+/* 장르 배지 */
 .movie-genres {
     margin: 8px 0;
 }
@@ -126,19 +146,109 @@
 .genre-badge {
     display: inline-block;
     padding: 4px 10px;
-    background: rgba(229, 9, 20, 0.2);
+    background: rgba(229, 9, 20, 0.25);
     border: 1px solid rgba(229, 9, 20, 0.5);
     border-radius: 12px;
-    font-size: 0.75rem;
-    color: #e50914;
-    font-weight: 500;
+    font-size: 11px;
+    color: #ff6b6b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* 줄거리 */
+.movie-overview {
+    font-size: 12px;
+    line-height: 1.5;
+    color: #ddd;
+    margin: 10px 0 0 0;
+    text-align: left;
+}
+
+/* 스크롤바 스타일링 */
+.movie-info-overlay::-webkit-scrollbar {
+    width: 3px;
+}
+
+.movie-info-overlay::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+}
+
+.movie-info-overlay::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+}
+
+.movie-info-overlay::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .movie-card {
+        min-width: 150px;
+        max-width: 150px;
+        height: 225px;
+    }
+
+    .movie-card:hover {
+        transform: translateY(-6px) scale(1.03);
+    }
+
+    .movie-title {
+        font-size: 14px;
+    }
+
+    .movie-meta {
+        font-size: 11px;
+    }
+
+    .movie-overview {
+        font-size: 11px;
+    }
+
+    .wishlist-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+    }
+
+    .genre-badge {
+        font-size: 10px;
+        padding: 3px 8px;
+    }
+
+    .movie-info-overlay {
+        padding: 16px 12px 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .movie-card {
+        min-width: 140px;
+        max-width: 140px;
+        height: 210px;
+    }
+
+    .movie-title {
+        font-size: 13px;
+    }
+
+    .wishlist-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+        top: 8px;
+        right: 8px;
+    }
 }
 
 /* 다크 모드 대응 */
 @media (prefers-color-scheme: dark) {
     .genre-badge {
-        background: rgba(229, 9, 20, 0.15);
+        background: rgba(229, 9, 20, 0.2);
         border-color: rgba(229, 9, 20, 0.4);
-        color: #ff6b6b;
+        color: #ff8787;
     }
 }
