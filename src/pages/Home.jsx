@@ -75,6 +75,22 @@ function Home() {
         }, 600);
     }, [isAnimating, currentIndex, featuredMovies.length]);
 
+    const handlePrev = useCallback(() => {
+        if (isAnimating) return;
+
+        const newIndex = currentIndex === 0 ? featuredMovies.length - 1 : currentIndex - 1;
+        setNextIndex(newIndex);
+        setSlideDirection('right');
+        setIsAnimating(true);
+
+        setTimeout(() => {
+            setCurrentIndex(newIndex);
+            setNextIndex(null);
+            setSlideDirection('');
+            setIsAnimating(false);
+        }, 600);
+    }, [isAnimating, currentIndex, featuredMovies.length]);
+
     const goToSlide = (index) => {
         if (isAnimating || index === currentIndex) return;
 
@@ -107,7 +123,10 @@ function Home() {
         return (
             <div className="home">
                 <Navbar />
-                <div className="home-loading">로딩 중...</div>
+                <div className="home-loading">
+                    <div className="loading-spinner"></div>
+                    <p>영화 로딩 중...</p>
+                </div>
             </div>
         );
     }
@@ -143,6 +162,29 @@ function Home() {
                     <div className="hero-gradient"></div>
                 </div>
 
+                {/* 네비게이션 화살표 */}
+                <button
+                    className="hero-nav-btn hero-nav-prev"
+                    onClick={handlePrev}
+                    disabled={isAnimating}
+                    aria-label="이전 영화"
+                >
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                    </svg>
+                </button>
+
+                <button
+                    className="hero-nav-btn hero-nav-next"
+                    onClick={handleNext}
+                    disabled={isAnimating}
+                    aria-label="다음 영화"
+                >
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                    </svg>
+                </button>
+
                 {/* 콘텐츠 */}
                 <div className={`hero-content ${slideDirection ? `slide-out-${slideDirection}` : ''}`}>
                     <h1 className="hero-title">{currentMovie.title || currentMovie.name}</h1>
@@ -152,12 +194,13 @@ function Home() {
                         <span className="hero-year">
                             {(currentMovie.release_date || currentMovie.first_air_date)?.split('-')[0]}
                         </span>
+                        <span className="hero-popularity">🔥 인기도: {currentMovie.popularity?.toFixed(0)}</span>
                     </div>
 
                     <p className="hero-overview">
                         {currentMovie.overview?.length > 200
                             ? `${currentMovie.overview.substring(0, 200)}...`
-                            : currentMovie.overview}
+                            : currentMovie.overview || '줄거리 정보가 없습니다.'}
                     </p>
 
                     <div className="hero-buttons">
