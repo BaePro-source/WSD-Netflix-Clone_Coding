@@ -60,7 +60,7 @@ function Wishlist() {
                             className={`view-button ${viewMode === 'scroll' ? 'active' : ''}`}
                             onClick={() => setViewMode('scroll')}
                         >
-                            📜 그리드 뷰
+                            📜 Infinite Scroll
                         </button>
                         <button
                             className={`view-button ${viewMode === 'table' ? 'active' : ''}`}
