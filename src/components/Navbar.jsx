@@ -29,7 +29,7 @@ function Navbar() {
             <div className="navbar-container">
                 <div className="navbar-left">
                     <h1 className="navbar-logo" onClick={() => navigate('/')}>
-                        🎬 MOVIEFLIX
+                        JFLIX
                     </h1>
                     <ul className="navbar-menu">
                         <li
@@ -42,7 +42,7 @@ function Navbar() {
                             className={`navbar-item ${location.pathname === '/popular' ? 'active' : ''}`}
                             onClick={() => navigate('/popular')}
                         >
-                            영화
+                            대세 콘텐츠
                         </li>
                         <li
                             className={`navbar-item ${location.pathname === '/wishlist' ? 'active' : ''}`}
