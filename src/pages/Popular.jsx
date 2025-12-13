@@ -1,5 +1,5 @@
 // src/pages/Popular.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { movieAPI } from '../services/api';
 import { getImageUrl } from '../services/api';
 import Navbar from '../components/Navbar';
@@ -18,9 +18,8 @@ function Popular() {
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const lastMovieRef = useRef(null);
     const [showTopButton, setShowTopButton] = useState(false);
-    const [wishlistVersion, setWishlistVersion] = useState(0); // ✅ 찜하기 상태 업데이트용
 
-    // ✅ Table View에서 body scroll 제어
+    // Table View에서 body scroll 제어
     useEffect(() => {
         if (viewMode === 'table') {
             document.body.style.overflow = 'hidden';
@@ -53,7 +52,7 @@ function Popular() {
     };
 
     // 무한 스크롤용 데이터 로딩
-    const loadMoreMovies = async () => {
+    const loadMoreMovies = useCallback(async () => {
         if (isLoadingMore || !hasMore) return;
 
         try {
@@ -67,7 +66,8 @@ function Popular() {
             setCurrentPage(nextPage);
             setTotalPages(response.data.total_pages);
 
-            if (nextPage >= response.data.total_pages || nextPage >= 20) {
+            // 마지막 페이지 체크 (20개 제한 없음!)
+            if (nextPage >= response.data.total_pages) {
                 setHasMore(false);
             }
 
@@ -78,7 +78,7 @@ function Popular() {
         } finally {
             setIsLoadingMore(false);
         }
-    };
+    }, [currentPage, hasMore, isLoadingMore]);
 
     // View 모드 변경 시 초기화
     useEffect(() => {
@@ -105,6 +105,7 @@ function Popular() {
         }
 
         window.scrollTo(0, 0);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [viewMode]);
 
     // Table View 페이지 변경
@@ -115,7 +116,7 @@ function Popular() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentPage, viewMode]);
 
-    // 무한 스크롤 Intersection Observer
+    // Intersection Observer
     useEffect(() => {
         if (viewMode !== 'scroll' || !hasMore || isLoadingMore) return;
 
@@ -135,8 +136,7 @@ function Popular() {
         return () => {
             if (observer) observer.disconnect();
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [viewMode, hasMore, isLoadingMore]);
+    }, [viewMode, hasMore, isLoadingMore, loadMoreMovies, movies.length]);
 
     // 스크롤 감지 (맨 위로 버튼)
     useEffect(() => {
@@ -158,10 +158,8 @@ function Popular() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // ✅ 찜하기 토글 - 리렌더링 트리거 추가
     const handleWishlistToggle = (movie) => {
         toggleWishlist(movie);
-        setWishlistVersion(v => v + 1); // 상태 업데이트로 리렌더링 트리거
     };
 
     if (loading && movies.length === 0) {
