@@ -1,5 +1,5 @@
 // src/pages/Search.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import MovieCard from '../components/MovieCard';
@@ -13,7 +13,7 @@ function Search() {
     const [filteredMovies, setFilteredMovies] = useState([]);
     const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [viewMode, setViewMode] = useState('scroll'); // ✅ 'scroll' 또는 'table'
+    const [viewMode, setViewMode] = useState('scroll');
 
     // 필터링 상태
     const [genres, setGenres] = useState([]);
@@ -22,33 +22,18 @@ function Search() {
     const [selectedYear, setSelectedYear] = useState('');
     const [sortBy, setSortBy] = useState('popularity.desc');
 
-    // 페이지네이션 (Table View용)
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(0);
-
     // 무한 스크롤 상태
+    const [scrollPage, setScrollPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const lastMovieRef = useRef(null);
     const [showTopButton, setShowTopButton] = useState(false);
 
-    const [wishlistVersion, setWishlistVersion] = useState(0); // ✅ 찜 상태 업데이트용
+    // 테이블 뷰 상태
+    const [tablePage, setTablePage] = useState(1);
+    const [totalPages, setTotalPages] = useState(0);
 
-    // ✅ View 모드에 따른 body scroll 제어
-    useEffect(() => {
-        if (viewMode === 'table') {
-            document.body.style.overflow = 'hidden';
-            document.body.style.height = '100vh';
-        } else {
-            document.body.style.overflow = 'auto';
-            document.body.style.height = 'auto';
-        }
-
-        return () => {
-            document.body.style.overflow = 'auto';
-            document.body.style.height = 'auto';
-        };
-    }, [viewMode]);
+    const isInitialMount = useRef(true);
 
     // 장르 목록 가져오기
     useEffect(() => {
@@ -72,116 +57,8 @@ function Search() {
         }
     }, [location.search]);
 
-    // View 모드 변경 시 초기화
-    useEffect(() => {
-        setCurrentPage(1);
-        setMovies([]);
-        setFilteredMovies([]);
-        setHasMore(true);
-        setIsLoadingMore(false);
-        fetchMovies(1, false);
-        window.scrollTo(0, 0);
-    }, [viewMode]);
-
-    // 검색어 변경 시 재검색
-    useEffect(() => {
-        if (viewMode === 'table') {
-            fetchMovies(currentPage, false);
-        } else {
-            fetchMovies(1, false);
-        }
-    }, [searchQuery]);
-
-    // Table View 페이지 변경
-    useEffect(() => {
-        if (viewMode === 'table' && currentPage > 1) {
-            fetchMovies(currentPage, false);
-        }
-    }, [currentPage]);
-
-    // 영화 검색/필터링
-    const fetchMovies = async (page = 1, append = false) => {
-        if (page === 1) {
-            setLoading(true);
-        } else {
-            setIsLoadingMore(true);
-        }
-
-        try {
-            let response;
-
-            if (searchQuery.trim()) {
-                // 검색어가 있으면 검색 API 사용
-                response = await movieAPI.searchMovies(searchQuery, page);
-            } else {
-                // 검색어가 없으면 인기 영화 가져오기
-                response = await movieAPI.getPopular(page);
-            }
-
-            const results = response.data.results;
-
-            if (append) {
-                setMovies(prev => [...prev, ...results]);
-            } else {
-                setMovies(results);
-            }
-
-            setTotalPages(response.data.total_pages);
-            setHasMore(page < response.data.total_pages);
-
-            // 필터 적용
-            applyFilters(append ? [...movies, ...results] : results);
-        } catch (error) {
-            console.error('영화 가져오기 실패:', error);
-        } finally {
-            setLoading(false);
-            setIsLoadingMore(false);
-        }
-    };
-
-    // 무한 스크롤 - 더 많은 영화 로드
-    const loadMoreMovies = async () => {
-        if (isLoadingMore || !hasMore || viewMode === 'table') return;
-
-        const nextPage = currentPage + 1;
-        setCurrentPage(nextPage);
-        await fetchMovies(nextPage, true);
-    };
-
-    // 무한 스크롤 Intersection Observer
-    useEffect(() => {
-        if (viewMode !== 'scroll' || !hasMore || isLoadingMore) return;
-
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (entries[0].isIntersecting) {
-                    loadMoreMovies();
-                }
-            },
-            { threshold: 0.5 }
-        );
-
-        if (lastMovieRef.current) {
-            observer.observe(lastMovieRef.current);
-        }
-
-        return () => {
-            if (observer) observer.disconnect();
-        };
-    }, [viewMode, hasMore, isLoadingMore, currentPage]);
-
-    // 스크롤 감지 (맨 위로 버튼)
-    useEffect(() => {
-        const handleScroll = () => {
-            setShowTopButton(window.scrollY > 500);
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
     // 필터 적용 (클라이언트 사이드)
-    const applyFilters = (movieList) => {
+    const applyFilters = useCallback((movieList) => {
         let filtered = [...movieList];
 
         // 장르 필터
@@ -231,17 +108,142 @@ function Search() {
         });
 
         setFilteredMovies(filtered);
-    };
+    }, [selectedGenre, selectedRating, selectedYear, sortBy]);
+
+    // 영화 검색/필터링
+    const fetchMovies = useCallback(async (page = 1, append = false) => {
+        if (page === 1) {
+            setLoading(true);
+        } else {
+            setIsLoadingMore(true);
+        }
+
+        try {
+            let response;
+
+            if (searchQuery.trim()) {
+                response = await movieAPI.searchMovies(searchQuery, page);
+            } else {
+                response = await movieAPI.getPopular(page);
+            }
+
+            const results = response.data.results;
+            let newMovies;
+
+            if (append) {
+                newMovies = [...movies, ...results];
+                setMovies(newMovies);
+            } else {
+                newMovies = results;
+                setMovies(results);
+            }
+
+            setTotalPages(response.data.total_pages);
+            setHasMore(page < response.data.total_pages);
+
+            applyFilters(newMovies);
+        } catch (error) {
+            console.error('영화 가져오기 실패:', error);
+        } finally {
+            setLoading(false);
+            setIsLoadingMore(false);
+        }
+    }, [searchQuery, movies, applyFilters]);
+
+    // 초기 로드
+    useEffect(() => {
+        fetchMovies(1, false);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // View 모드 변경 시
+    useEffect(() => {
+        setScrollPage(1);
+        setTablePage(1);
+        setMovies([]);
+        setFilteredMovies([]);
+        setHasMore(true);
+        setIsLoadingMore(false);
+        fetchMovies(1, false);
+        window.scrollTo(0, 0);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [viewMode]);
+
+    // 검색어 변경 시 (초기 마운트는 제외)
+    useEffect(() => {
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            return;
+        }
+
+        setScrollPage(1);
+        setTablePage(1);
+        setMovies([]);
+        setFilteredMovies([]);
+        setHasMore(true);
+        fetchMovies(1, false);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchQuery]);
+
+    // 테이블 뷰 페이지 변경
+    useEffect(() => {
+        if (viewMode === 'table' && tablePage > 1) {
+            fetchMovies(tablePage, false);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [tablePage, viewMode]);
+
+    // 무한 스크롤 - 더 많은 영화 로드
+    const loadMoreMovies = useCallback(async () => {
+        if (isLoadingMore || !hasMore || viewMode === 'table') return;
+
+        const nextPage = scrollPage + 1;
+        setScrollPage(nextPage);
+        await fetchMovies(nextPage, true);
+    }, [isLoadingMore, hasMore, viewMode, scrollPage, fetchMovies]);
+
+    // 무한 스크롤 Intersection Observer
+    useEffect(() => {
+        if (viewMode !== 'scroll' || !hasMore || isLoadingMore) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    loadMoreMovies();
+                }
+            },
+            { threshold: 0.5 }
+        );
+
+        if (lastMovieRef.current) {
+            observer.observe(lastMovieRef.current);
+        }
+
+        return () => {
+            if (observer) observer.disconnect();
+        };
+    }, [viewMode, hasMore, isLoadingMore, loadMoreMovies]);
+
+    // 스크롤 감지 (맨 위로 버튼)
+    useEffect(() => {
+        const handleScroll = () => {
+            setShowTopButton(window.scrollY > 500);
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     // 필터 변경 시 재적용
     useEffect(() => {
         applyFilters(movies);
-    }, [selectedGenre, selectedRating, selectedYear, sortBy, movies]);
+    }, [selectedGenre, selectedRating, selectedYear, sortBy, movies, applyFilters]);
 
     // 검색 실행
     const handleSearch = (e) => {
         e.preventDefault();
-        setCurrentPage(1);
+        setScrollPage(1);
+        setTablePage(1);
         setMovies([]);
         setFilteredMovies([]);
         fetchMovies(1, false);
@@ -254,22 +256,23 @@ function Search() {
         setSelectedYear('');
         setSortBy('popularity.desc');
         setSearchQuery('');
-        setCurrentPage(1);
+        setScrollPage(1);
+        setTablePage(1);
         setMovies([]);
         setFilteredMovies([]);
         setHasMore(true);
     };
 
-    // ✅ 찜하기 토글 - 리렌더링 트리거
+    // 찜하기 토글
     const handleWishlistToggle = (movie) => {
         toggleWishlist(movie);
-        setWishlistVersion(v => v + 1);
+        setFilteredMovies([...filteredMovies]);
     };
 
-    // Table View 페이지 변경
+    // 테이블 페이지 변경
     const handlePageChange = (newPage) => {
         if (newPage >= 1 && newPage <= totalPages) {
-            setCurrentPage(newPage);
+            setTablePage(newPage);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
@@ -279,7 +282,7 @@ function Search() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // 년도 옵션 생성 (현재 년도부터 1900년까지)
+    // 년도 옵션 생성
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: currentYear - 1899 }, (_, i) => currentYear - i);
 
@@ -496,20 +499,20 @@ function Search() {
                         <div className="pagination">
                             <button
                                 className="page-button"
-                                onClick={() => handlePageChange(currentPage - 1)}
-                                disabled={currentPage === 1}
+                                onClick={() => handlePageChange(tablePage - 1)}
+                                disabled={tablePage === 1}
                             >
                                 ← 이전
                             </button>
 
                             <div className="page-numbers">
                                 {[...Array(Math.min(5, totalPages))].map((_, i) => {
-                                    const pageNum = currentPage - 2 + i;
+                                    const pageNum = tablePage - 2 + i;
                                     if (pageNum < 1 || pageNum > totalPages) return null;
                                     return (
                                         <button
                                             key={pageNum}
-                                            className={`page-number ${currentPage === pageNum ? 'active' : ''}`}
+                                            className={`page-number ${tablePage === pageNum ? 'active' : ''}`}
                                             onClick={() => handlePageChange(pageNum)}
                                         >
                                             {pageNum}
@@ -519,13 +522,13 @@ function Search() {
                             </div>
 
                             <span className="page-info">
-                                {currentPage} / {totalPages}
+                                {tablePage} / {totalPages}
                             </span>
 
                             <button
                                 className="page-button"
-                                onClick={() => handlePageChange(currentPage + 1)}
-                                disabled={currentPage === totalPages}
+                                onClick={() => handlePageChange(tablePage + 1)}
+                                disabled={tablePage === totalPages}
                             >
                                 다음 →
                             </button>
