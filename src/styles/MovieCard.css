@@ -7,7 +7,6 @@
     height: 300px;
     border-radius: 12px;
     overflow: hidden;
-    /* ✅ cursor 제거 - 클릭 불가능 */
     transition: transform 0.3s ease, box-shadow 0.3s ease, z-index 0s 0.3s;
     background: #1a1a1a;
 }
@@ -19,26 +18,74 @@
     transition: transform 0.3s ease, box-shadow 0.3s ease, z-index 0s;
 }
 
-/* 포스터 래퍼 */
+/* ========== 포스터 래퍼 ========== */
 .movie-poster-wrapper {
     position: relative;
     width: 100%;
     height: 100%;
+    background: #1a1a1a;
+    border-radius: 12px;
+    overflow: hidden;
 }
 
-/* 포스터 이미지 */
+/* ========== 이미지 로딩 스켈레톤 ========== */
+.movie-poster-skeleton {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+    z-index: 1;
+}
+
+.skeleton-shimmer {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.05) 50%,
+            transparent 100%
+    );
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* ========== 포스터 이미지 ========== */
 .movie-poster {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 이미지 로딩 상태 */
+.movie-poster.loading {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.movie-poster.loaded {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease-in-out;
 }
 
 .movie-card:hover .movie-poster {
     transform: scale(1.1);
 }
 
-/* ========== 찜하기 버튼 (호버 시에만 표시!) ========== */
+/* ========== 찜하기 버튼 ========== */
 .wishlist-btn {
     position: absolute;
     top: 10px;
@@ -49,19 +96,19 @@
     width: 42px;
     height: 42px;
     font-size: 22px;
-    cursor: pointer; /* ✅ 찜하기 버튼은 클릭 가능 */
+    cursor: pointer;
     z-index: 20;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     backdrop-filter: blur(10px);
-    /* ✅ 기본 상태: 숨김 */
+    /* 기본 상태: 숨김 */
     opacity: 0;
     transform: scale(0.8);
 }
 
-/* ✅ 카드에 호버 시 찜 버튼 나타남 */
+/* 카드에 호버 시 찜 버튼 나타남 */
 .movie-card:hover .wishlist-btn {
     opacity: 1;
     transform: scale(1);
@@ -72,7 +119,7 @@
     transform: scale(1.2);
 }
 
-/* ✅ 찜한 상태는 항상 보임! */
+/* 찜한 상태는 항상 보임 */
 .wishlist-btn.wished {
     opacity: 1;
     transform: scale(1);
@@ -84,7 +131,7 @@
     transform: scale(1.2);
 }
 
-/* Hover 시 나타나는 정보 오버레이 */
+/* ========== Hover 시 나타나는 정보 오버레이 ========== */
 .movie-info-overlay {
     position: absolute;
     bottom: 0;
@@ -102,7 +149,6 @@
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     max-height: 85%;
     overflow-y: auto;
-    /* ✅ 오버레이도 클릭 불가능 */
     pointer-events: none;
 }
 
@@ -198,7 +244,7 @@
     background: rgba(255, 255, 255, 0.5);
 }
 
-/* 반응형 디자인 */
+/* ========== 반응형 디자인 ========== */
 @media (max-width: 768px) {
     .movie-card {
         min-width: 150px;
@@ -258,7 +304,7 @@
     }
 }
 
-/* 다크 모드 대응 */
+/* ========== 다크 모드 대응 ========== */
 @media (prefers-color-scheme: dark) {
     .genre-badge {
         background: rgba(229, 9, 20, 0.2);

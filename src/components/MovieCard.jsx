@@ -30,13 +30,14 @@ const GENRES = {
 function MovieCard({ movie, onWishlistToggle }) {
     const { title, poster_path, vote_average, release_date, overview, genre_ids } = movie;
     const [isWished, setIsWished] = useState(false);
+    const [imageLoaded, setImageLoaded] = useState(false); // ✅ 이미지 로딩 상태 추가
 
     useEffect(() => {
         setIsWished(isInWishlist(movie.id));
     }, [movie.id]);
 
     const handleWishlistClick = (e) => {
-        e.stopPropagation(); // 부모 클릭 이벤트 방지
+        e.stopPropagation();
 
         if (onWishlistToggle) {
             onWishlistToggle(movie);
@@ -44,11 +45,6 @@ function MovieCard({ movie, onWishlistToggle }) {
 
         setIsWished(!isWished);
     };
-
-    // ✅ 카드 클릭 핸들러 제거 - 아무 동작도 안 함
-    // const handleCardClick = () => {
-    //     navigate(`/movie/${movie.id}`);
-    // };
 
     // 장르 이름 가져오기 (최대 2개)
     const getGenreNames = () => {
@@ -63,16 +59,26 @@ function MovieCard({ movie, onWishlistToggle }) {
     const genreNames = getGenreNames();
 
     return (
-        // ✅ onClick 제거 - 클릭해도 아무 반응 없음
         <div className="movie-card">
             {/* 포스터 영역 */}
             <div className="movie-poster-wrapper">
+                {/* ✅ 로딩 중일 때 스켈레톤 표시 */}
+                {!imageLoaded && (
+                    <div className="movie-poster-skeleton">
+                        <div className="skeleton-shimmer"></div>
+                    </div>
+                )}
+
+                {/* ✅ 이미지 로드 완료 시 loaded 클래스 추가 + lazy loading */}
                 <img
                     src={getImageUrl(poster_path, 'w500')}
                     alt={title}
-                    className="movie-poster"
+                    className={`movie-poster ${imageLoaded ? 'loaded' : 'loading'}`}
+                    onLoad={() => setImageLoaded(true)} // ✅ 로드 완료 시 상태 변경
+                    loading="lazy" // ✅ 브라우저 네이티브 lazy loading
                     onError={(e) => {
                         e.target.src = '/placeholder.png';
+                        setImageLoaded(true); // 에러여도 스켈레톤 숨김
                     }}
                 />
 
@@ -81,6 +87,7 @@ function MovieCard({ movie, onWishlistToggle }) {
                     className={`wishlist-btn ${isWished ? 'wished' : ''}`}
                     onClick={handleWishlistClick}
                     title={isWished ? '찜 해제' : '찜하기'}
+                    aria-label={isWished ? '찜 목록에서 제거' : '찜 목록에 추가'} // ✅ 접근성 개선
                 >
                     {isWished ? '❤️' : '🤍'}
                 </button>
@@ -119,4 +126,4 @@ function MovieCard({ movie, onWishlistToggle }) {
     );
 }
 
-export default MovieCard;
+export default React.memo(MovieCard); // ✅ 성능 최적화
