@@ -1,5 +1,5 @@
 // src/components/Navbar.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { logout, getCurrentUser } from '../services/auth';
 import '../styles/Navbar.css';
@@ -9,6 +9,17 @@ function Navbar() {
     const location = useLocation();
     const currentUser = getCurrentUser();
     const [searchQuery, setSearchQuery] = useState('');
+    const [scrolled, setScrolled] = useState(false); // ✅ 스크롤 상태 추가
+
+    // ✅ 스크롤 이벤트 리스너
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 50);
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     const handleLogout = () => {
         logout();
@@ -18,29 +29,32 @@ function Navbar() {
     const handleSearch = (e) => {
         e.preventDefault();
         if (searchQuery.trim()) {
-            // /search 페이지로 이동하면서 검색어를 쿼리 파라미터로 전달
             navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
-            setSearchQuery(''); // 검색 후 입력창 초기화
+            setSearchQuery('');
         }
     };
 
-    // ✅ 돋보기 버튼 클릭 핸들러 추가
     const handleSearchIconClick = () => {
         if (searchQuery.trim()) {
-            // 검색어가 있으면 검색 실행
             navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
             setSearchQuery('');
         } else {
-            // 검색어가 없으면 Search 페이지로 이동
             navigate('/search');
         }
     };
 
     return (
-        <nav className="navbar">
+        <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}> {/* ✅ scrolled 클래스 추가 */}
             <div className="navbar-container">
                 <div className="navbar-left">
-                    <h1 className="navbar-logo" onClick={() => navigate('/')}>
+                    {/* ✅ 로고에 cursor: pointer 스타일 */}
+                    <h1
+                        className="navbar-logo"
+                        onClick={() => navigate('/')}
+                        role="button"
+                        tabIndex={0}
+                        onKeyPress={(e) => e.key === 'Enter' && navigate('/')}
+                    >
                         JFLIX
                     </h1>
                     <ul className="navbar-menu">
@@ -74,20 +88,31 @@ function Navbar() {
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="search-input"
                         />
-                        {/* ✅ type을 button으로 변경하고 onClick 추가 */}
                         <button
                             type="button"
                             className="search-button"
                             onClick={handleSearchIconClick}
+                            aria-label="검색"
                         >
                             🔍
                         </button>
                     </form>
 
-                    <span className="navbar-user">{currentUser?.email}</span>
-                    <button className="navbar-logout" onClick={handleLogout}>
-                        로그아웃
-                    </button>
+                    {currentUser ? (
+                        <>
+                            <span className="navbar-user">{currentUser.email}</span>
+                            <button className="navbar-logout" onClick={handleLogout}>
+                                로그아웃
+                            </button>
+                        </>
+                    ) : (
+                        <button
+                            className="navbar-signin"
+                            onClick={() => navigate('/signin')}
+                        >
+                            로그인
+                        </button>
+                    )}
                 </div>
             </div>
         </nav>
