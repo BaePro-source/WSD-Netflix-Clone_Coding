@@ -272,3 +272,23 @@
         font-size: 12px;
     }
 }
+
+/* ✅ 모바일 전용 배지 */
+.mobile-badge {
+    display: none;
+    margin-left: 10px;
+    padding: 3px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    color: white;
+    background: #e50914;
+    border-radius: 12px;
+    letter-spacing: 1px;
+}
+
+/* 모바일에서만 표시 */
+@media (max-width: 768px) {
+    .mobile-badge {
+        display: inline-block;
+    }
+}

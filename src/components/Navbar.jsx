@@ -68,6 +68,8 @@ function Navbar() {
                     >
                         JFLIX
                     </h1>
+                    {/* ✅ 모바일 전용 배지 (과제 확인용) */}
+                    <span className="mobile-badge">MOBILE</span>
 
                     {/* 💻 PC 전용 네비게이션 메뉴 */}
                     <ul className="navbar-menu">
