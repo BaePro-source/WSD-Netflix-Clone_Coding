@@ -8,10 +8,12 @@ function Navbar() {
     const navigate = useNavigate();
     const location = useLocation();
     const currentUser = getCurrentUser();
-    const [searchQuery, setSearchQuery] = useState('');
-    const [scrolled, setScrolled] = useState(false); // ✅ 스크롤 상태 추가
 
-    // ✅ 스크롤 이벤트 리스너
+    const [searchQuery, setSearchQuery] = useState('');
+    const [scrolled, setScrolled] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+    // 스크롤 시 navbar 스타일 변경
     useEffect(() => {
         const handleScroll = () => {
             setScrolled(window.scrollY > 50);
@@ -31,6 +33,7 @@ function Navbar() {
         if (searchQuery.trim()) {
             navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
             setSearchQuery('');
+            setMobileMenuOpen(false);
         }
     };
 
@@ -41,13 +44,13 @@ function Navbar() {
         } else {
             navigate('/search');
         }
+        setMobileMenuOpen(false);
     };
 
     return (
-        <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}> {/* ✅ scrolled 클래스 추가 */}
+        <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
             <div className="navbar-container">
                 <div className="navbar-left">
-                    {/* ✅ 로고에 cursor: pointer 스타일 */}
                     <h1
                         className="navbar-logo"
                         onClick={() => navigate('/')}
@@ -57,6 +60,8 @@ function Navbar() {
                     >
                         JFLIX
                     </h1>
+
+                    {/* PC 전용 메뉴 */}
                     <ul className="navbar-menu">
                         <li
                             className={`navbar-item ${location.pathname === '/' ? 'active' : ''}`}
@@ -80,6 +85,16 @@ function Navbar() {
                 </div>
 
                 <div className="navbar-right">
+                    {/* 모바일 햄버거 버튼 */}
+                    <button
+                        className="navbar-hamburger"
+                        onClick={() => setMobileMenuOpen(prev => !prev)}
+                        aria-label="메뉴 열기"
+                    >
+                        ☰
+                    </button>
+
+                    {/* PC 전용 검색 */}
                     <form className="navbar-search" onSubmit={handleSearch}>
                         <input
                             type="text"
@@ -115,6 +130,39 @@ function Navbar() {
                     )}
                 </div>
             </div>
+
+            {/* 모바일 전용 메뉴 */}
+            {mobileMenuOpen && (
+                <div className="mobile-menu">
+                    <form className="mobile-search" onSubmit={handleSearch}>
+                        <input
+                            type="text"
+                            placeholder="영화 검색..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                        <button type="submit">🔍</button>
+                    </form>
+
+                    <button
+                        onClick={() => {
+                            navigate('/popular');
+                            setMobileMenuOpen(false);
+                        }}
+                    >
+                        🔥 대세 콘텐츠
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            navigate('/wishlist');
+                            setMobileMenuOpen(false);
+                        }}
+                    >
+                        ❤️ 내가 찜한 콘텐츠
+                    </button>
+                </div>
+            )}
         </nav>
     );
 }
