@@ -38,7 +38,6 @@ export const register = async (email, password) => {
         throw new Error('이미 존재하는 이메일입니다.');
     }
 
-    // TMDB API Key를 비밀번호로 사용 (과제 요구사항)
     // 실제로는 API 호출 테스트
     try {
         await movieAPI.getPopular();
