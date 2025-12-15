@@ -1,4 +1,6 @@
 // src/components/Navbar.jsx
+// 📌 과제용 네비게이션 바 컴포넌트
+// 📱 모바일/PC 반응형 UI를 고려하여 구현됨
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { logout, getCurrentUser } from '../services/auth';
@@ -8,12 +10,15 @@ function Navbar() {
     const navigate = useNavigate();
     const location = useLocation();
     const currentUser = getCurrentUser();
+    // 🔐 현재 로그인한 사용자 정보 (과제: 인증 상태 분기 처리)
 
     const [searchQuery, setSearchQuery] = useState('');
     const [scrolled, setScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    // 📱 mobileMenuOpen: 모바일 햄버거 메뉴 상태 관리용 state
 
-    // 스크롤 시 navbar 스타일 변경
+    // 🖱 스크롤 위치에 따라 네비게이션 스타일 변경
+    // 과제 포인트: UX 향상을 위한 동적 UI 처리
     useEffect(() => {
         const handleScroll = () => {
             setScrolled(window.scrollY > 50);
@@ -24,6 +29,7 @@ function Navbar() {
     }, []);
 
     const handleLogout = () => {
+        // 🔓 로그아웃 처리 후 로그인 페이지로 이동
         logout();
         navigate('/signin');
     };
@@ -31,13 +37,15 @@ function Navbar() {
     const handleSearch = (e) => {
         e.preventDefault();
         if (searchQuery.trim()) {
+            // 🔍 검색 기능 구현 (라우터 기반 페이지 이동)
             navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
             setSearchQuery('');
-            setMobileMenuOpen(false);
+            setMobileMenuOpen(false); // 모바일 UX 고려
         }
     };
 
     const handleSearchIconClick = () => {
+        // 🔍 검색 아이콘 클릭 시 동일한 검색 로직 수행
         if (searchQuery.trim()) {
             navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
             setSearchQuery('');
@@ -61,7 +69,7 @@ function Navbar() {
                         JFLIX
                     </h1>
 
-                    {/* PC 전용 메뉴 */}
+                    {/* 💻 PC 전용 네비게이션 메뉴 */}
                     <ul className="navbar-menu">
                         <li
                             className={`navbar-item ${location.pathname === '/' ? 'active' : ''}`}
@@ -85,7 +93,8 @@ function Navbar() {
                 </div>
 
                 <div className="navbar-right">
-                    {/* 모바일 햄버거 버튼 */}
+                    {/* 📱 모바일 전용 햄버거 버튼 */}
+                    {/* 과제 포인트: 반응형 UI 대응 */}
                     <button
                         className="navbar-hamburger"
                         onClick={() => setMobileMenuOpen(prev => !prev)}
@@ -94,7 +103,7 @@ function Navbar() {
                         ☰
                     </button>
 
-                    {/* PC 전용 검색 */}
+                    {/* 💻 PC 전용 검색창 */}
                     <form className="navbar-search" onSubmit={handleSearch}>
                         <input
                             type="text"
@@ -113,6 +122,7 @@ function Navbar() {
                         </button>
                     </form>
 
+                    {/* 🔐 로그인 상태에 따른 UI 분기 */}
                     {currentUser ? (
                         <>
                             <span className="navbar-user">{currentUser.email}</span>
@@ -131,7 +141,8 @@ function Navbar() {
                 </div>
             </div>
 
-            {/* 모바일 전용 메뉴 */}
+            {/* 📱 모바일 전용 메뉴 영역 */}
+            {/* 과제 포인트: 모바일 환경에서 접근성 개선 */}
             {mobileMenuOpen && (
                 <div className="mobile-menu">
                     <form className="mobile-search" onSubmit={handleSearch}>
