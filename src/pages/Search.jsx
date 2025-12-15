@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import MovieCard from '../components/MovieCard';
 import { movieAPI, getImageUrl } from '../services/api';
-import { toggleWishlist, isInWishlist } from '../utils/localStorage';
+import { toggleWishlist, isInWishlist, addToSearchHistory, getSearchHistory, clearSearchHistory } from '../utils/localStorage';
 import '../styles/Search.css';
 
 function Search() {
@@ -14,6 +14,11 @@ function Search() {
     const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [viewMode, setViewMode] = useState('scroll');
+
+    // ✅ 최근 검색어 상태
+    const [showSearchHistory, setShowSearchHistory] = useState(false);
+    const [searchHistory, setSearchHistory] = useState([]);
+    const searchInputRef = useRef(null);
 
     // 필터링 상태
     const [genres, setGenres] = useState([]);
@@ -46,6 +51,23 @@ function Search() {
             }
         };
         fetchGenres();
+    }, []);
+
+    // ✅ 검색 기록 로드
+    useEffect(() => {
+        setSearchHistory(getSearchHistory());
+    }, []);
+
+    // ✅ 검색 기록 외부 클릭 감지
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (searchInputRef.current && !searchInputRef.current.contains(e.target)) {
+                setShowSearchHistory(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
     // URL 쿼리 파라미터에서 검색어 가져오기
@@ -239,14 +261,45 @@ function Search() {
         applyFilters(movies);
     }, [selectedGenre, selectedRating, selectedYear, sortBy, movies, applyFilters]);
 
-    // 검색 실행
-    const handleSearch = (e) => {
-        e.preventDefault();
+    // ✅ 검색 실행 (수정됨)
+    const handleSearch = (e, query = null) => {
+        if (e) e.preventDefault();
+
+        const finalQuery = query || searchQuery;
+        if (!finalQuery.trim()) return;
+
+        // 검색 기록에 추가
+        addToSearchHistory(finalQuery);
+        setSearchHistory(getSearchHistory());
+        setShowSearchHistory(false);
+
         setScrollPage(1);
         setTablePage(1);
         setMovies([]);
         setFilteredMovies([]);
         fetchMovies(1, false);
+    };
+
+    // ✅ 검색 기록 항목 클릭
+    const handleHistoryClick = (query) => {
+        setSearchQuery(query);
+        handleSearch(null, query);
+    };
+
+    // ✅ 검색 기록 개별 삭제
+    const handleRemoveHistory = (queryToRemove, e) => {
+        e.stopPropagation();
+        const updated = searchHistory.filter(q => q !== queryToRemove);
+        localStorage.setItem('searchHistory', JSON.stringify(updated));
+        setSearchHistory(updated);
+    };
+
+    // ✅ 검색 기록 전체 삭제
+    const handleClearHistory = (e) => {
+        e.stopPropagation();
+        clearSearchHistory();
+        setSearchHistory([]);
+        setShowSearchHistory(false);
     };
 
     // 필터 초기화
@@ -292,19 +345,57 @@ function Search() {
             <div className="search-container">
                 <h1 className="search-title">🔍 찾아보기 (search/filtering)</h1>
 
-                {/* 검색 바 */}
-                <form className="search-bar" onSubmit={handleSearch}>
-                    <input
-                        type="text"
-                        placeholder="영화 제목을 검색하세요..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="search-input-main"
-                    />
-                    <button type="submit" className="search-button-main">
-                        🔍 검색
-                    </button>
-                </form>
+                {/* ✅ 검색 바 (수정됨) */}
+                <div className="search-bar-wrapper" ref={searchInputRef}>
+                    <form className="search-bar" onSubmit={handleSearch}>
+                        <input
+                            type="text"
+                            placeholder="영화 제목을 검색하세요..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onFocus={() => setShowSearchHistory(true)}
+                            className="search-input-main"
+                        />
+                        <button type="submit" className="search-button-main">
+                            🔍 검색
+                        </button>
+                    </form>
+
+                    {/* ✅ 최근 검색어 드롭다운 */}
+                    {showSearchHistory && searchHistory.length > 0 && (
+                        <div className="search-history-dropdown">
+                            <div className="search-history-header">
+                                <span className="history-title">최근 검색어</span>
+                                <button
+                                    className="clear-all-btn"
+                                    onClick={handleClearHistory}
+                                    type="button"
+                                >
+                                    전체 삭제
+                                </button>
+                            </div>
+                            <div className="search-history-list">
+                                {searchHistory.map((query, index) => (
+                                    <div
+                                        key={index}
+                                        className="search-history-item"
+                                        onClick={() => handleHistoryClick(query)}
+                                    >
+                                        <span className="history-icon"></span>
+                                        <span className="history-text">{query}</span>
+                                        <button
+                                            className="remove-history-btn"
+                                            onClick={(e) => handleRemoveHistory(query, e)}
+                                            type="button"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
 
                 {/* 필터 섹션 */}
                 <div className="filter-section">
