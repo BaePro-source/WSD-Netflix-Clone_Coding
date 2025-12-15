@@ -32,7 +32,14 @@ export const toggleWishlist = (movieOrId) => {
     } else {
         // 없으면 추가 (객체인 경우만)
         if (movieData) {
-            wishlist.push(movieData);
+            // ✅ 날짜 정보 추가
+            const movieWithDate = {
+                ...movieData,
+                addedAt: new Date().toISOString(),
+                addedDate: new Date().toLocaleDateString('ko-KR'),
+                timestamp: Date.now()
+            };
+            wishlist.push(movieWithDate);
         }
     }
 

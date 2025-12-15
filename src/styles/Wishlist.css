@@ -228,6 +228,20 @@
     color: #999;
 }
 
+/* 추가한 날짜 컬럼 */
+.header-added,
+.cell-added {
+    flex: 0 0 120px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #999;
+}
+
+.cell-added {
+    color: #e50914;
+    font-weight: 500;
+}
+
 .cell-overview {
     font-size: 14px;
     color: #b3b3b3;

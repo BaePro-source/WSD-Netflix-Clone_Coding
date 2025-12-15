@@ -86,6 +86,7 @@ function Wishlist() {
                 )}
 
                 {/* Table 뷰 */}
+                {/* Table 뷰 */}
                 {viewMode === 'table' && (
                     <div className="movie-table">
                         <div className="table-header">
@@ -93,6 +94,7 @@ function Wishlist() {
                             <div className="header-title">제목</div>
                             <div className="header-rating">평점</div>
                             <div className="header-date">개봉일</div>
+                            <div className="header-added">추가한 날짜</div> {/* ✅ 새로 추가 */}
                             <div className="header-overview">줄거리</div>
                             <div className="header-action">삭제</div>
                         </div>
@@ -110,6 +112,9 @@ function Wishlist() {
                                     ⭐ {movie.vote_average?.toFixed(1)}
                                 </div>
                                 <div className="cell-date">{movie.release_date}</div>
+                                <div className="cell-added"> {/* ✅ 새로 추가 */}
+                                    {movie.addedDate || '날짜 정보 없음'}
+                                </div>
                                 <div className="cell-overview">
                                     {movie.overview || '줄거리 정보가 없습니다.'}
                                 </div>
