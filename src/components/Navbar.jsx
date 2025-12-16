@@ -144,7 +144,6 @@ function Navbar() {
             </div>
 
             {/* 📱 모바일 전용 메뉴 영역 */}
-            {/* 과제 포인트: 모바일 환경에서 접근성 개선 */}
             {mobileMenuOpen && (
                 <div className="mobile-menu">
                     <form className="mobile-search" onSubmit={handleSearch}>
@@ -156,6 +155,15 @@ function Navbar() {
                         />
                         <button type="submit">🔍</button>
                     </form>
+
+                    <button
+                        onClick={() => {
+                            navigate('/');
+                            setMobileMenuOpen(false);
+                        }}
+                    >
+                        🏠 홈
+                    </button>
 
                     <button
                         onClick={() => {
@@ -174,6 +182,22 @@ function Navbar() {
                     >
                         ❤️ 내가 찜한 콘텐츠
                     </button>
+
+                    {/* ✅ 로그아웃 버튼 추가 */}
+                    {currentUser && (
+                        <button
+                            onClick={() => {
+                                handleLogout();
+                                setMobileMenuOpen(false);
+                            }}
+                            style={{
+                                background: '#e50914',
+                                marginTop: '8px'
+                            }}
+                        >
+                            🚪 로그아웃
+                        </button>
+                    )}
                 </div>
             )}
         </nav>
