@@ -197,6 +197,8 @@
 .cell-action {
     display: flex;
     justify-content: center;
+    position: relative;
+    z-index: 5;
 }
 
 .table-wishlist-btn {
@@ -211,6 +213,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    z-index: 10;
 }
 
 .table-wishlist-btn:hover {
