@@ -158,8 +158,17 @@ function Popular() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const handleWishlistToggle = (movie) => {
+    const handleWishlistToggle = (movie, e) => {
+        // ✅ 이벤트 전파 중단
+        if (e) {
+            e.stopPropagation();
+            e.preventDefault();
+        }
+
         toggleWishlist(movie);
+
+        // ✅ 강제 리렌더링
+        setMovies(prev => [...prev]);
     };
 
     if (loading && movies.length === 0) {
@@ -241,7 +250,7 @@ function Popular() {
                                         <div className="cell-action">
                                             <button
                                                 className={`table-wishlist-btn ${isInWishlist(movie.id) ? 'wished' : ''}`}
-                                                onClick={() => handleWishlistToggle(movie)}
+                                                onClick={(e) => handleWishlistToggle(movie, e)}
                                                 title={isInWishlist(movie.id) ? '찜 해제' : '찜하기'}
                                             >
                                                 {isInWishlist(movie.id) ? '❤️' : '🤍'}
