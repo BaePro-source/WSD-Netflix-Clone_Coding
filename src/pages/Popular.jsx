@@ -159,6 +159,7 @@ function Popular() {
     };
 
     const handleWishlistToggle = (movie, e) => {
+        // ✅ 이벤트 전파 중단
         if (e) {
             e.stopPropagation();
             e.preventDefault();
@@ -166,6 +167,7 @@ function Popular() {
 
         toggleWishlist(movie);
 
+        // ✅ 강제 리렌더링
         setMovies(prev => [...prev]);
     };
 
